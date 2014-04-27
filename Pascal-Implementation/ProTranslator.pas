@@ -27,11 +27,13 @@ var
   IniFile       : TMemIniFile;
   LastLang      : string;
 
+{ Проверява дали s е буква }
 function IsAlpha(s : string) : boolean;
 begin
-  IsAlpha := not (s[1] in WordDelimiters);
+  IsAlpha := not (s[1] in StdWordDelims);
 end;
 
+{ Извлича дума от s намираща се на p позиция }
 function ExtractWordFromPos(s : string; p : integer) : string;
 var
   len, i  : integer;
@@ -51,6 +53,7 @@ begin
   ExtractWordFromPos := wrd;
 end;
 
+{ Показва дали подниза substr се намира на p позиция в s }
 function IsSubStringAtPos(s, substr : string; p : integer) : boolean;
 var
   substrLen, len, i : integer;
@@ -73,12 +76,14 @@ begin
   IsSubStringAtPos := true;
 end;
 
+{ Принтира съобщение за грешка и затваря програмата }
 procedure Panic(msg : string);
 begin
   writeln(msg + ' - ' + DateTimeToStr(Now));
   halt;
 end;
 
+{ Инициализира ресурси необходими на преводача }
 procedure ProTranslatorInit();
 var
   configFile : string;
@@ -93,6 +98,7 @@ begin
   KeyWords := TStringList.Create;
 end;
 
+{ Освобождава ресурсите използвани от преводача }
 procedure ProTranslatorFree();
 begin
   KeyWords.Free;
@@ -100,6 +106,7 @@ begin
   Regions:=nil;
 end;
 
+{ Връща името на раздела в config.ini отговарящ на името на файла }
 function GetLangName(filename : string) : string;
 var
   i                   : integer;
@@ -113,7 +120,7 @@ begin
       Panic('Раздел ' + sections[i] + ' е непълен.');
     fileExt    := IniFile.ReadString(sections[i], 'FileExtensions', '') + ' ';
     fileExtens := ExtractFileExt(filename) + ' ';
-    if Pos(fileExt, fileExtens) <> 0 then begin
+    if Pos(fileExtens, fileExt) <> 0 then begin
       GetLangName := sections[i];
       sections.Free;
       exit;
@@ -123,6 +130,7 @@ begin
   Panic('Не е намерен раздел отговарящ на файла.');
 end;
 
+{ Зарежда настройки от раздела lang на config.ini }
 procedure LoadSettings(lang : string);
 var
   i                 : integer;
@@ -156,6 +164,7 @@ begin
   LastLang := lang;
 end;
 
+{ Превежда дума invert показва дали превода е обърнат }
 function TranslateWord(wrd : string; invert : boolean) : string;
 var
   i       : integer;
@@ -180,6 +189,10 @@ begin
   TranslateWord := wrd;
 end;
 
+{ Функцията извършваща превода
+  codeLines - кода за превод
+  lang - името на раздела отговарящ на кода
+  invert - показва дали превода е наопаки }
 function Translate(codeLines : TStringList;
                    lang      : string;
                    invert    : boolean) : string;
@@ -192,13 +205,17 @@ begin
     LoadSettings(lang);
   translatedLines := TStringList.Create;
   CurrentRegion := nil;
+  { Четем кода ред по ред }
   for i := 0 to codeLines.Count-1 do begin
     currentLine := codeLines[i];
     translatedLine := '';
     currentLineLen := UTF8Length(currentLine);
     p := 1;
+    { Четем реда знак по знак }
     while p <= currentLineLen do begin
+      { Ако сме извън регион }
       if CurrentRegion = nil then begin
+        { Търсим начало на регион }
         for j := 0 to RegionsCount-1 do begin
           if IsSubStringAtPos(currentLine, Regions[j].start, p) then begin
             CurrentRegion := @Regions[j];
@@ -208,8 +225,10 @@ begin
             //continue;
           end;
         end;
+        { Ако не сме намерили регион }
         if CurrentRegion = nil then begin
           ch := UTF8Copy(currentLine, p, 1);
+          { проверяваме за начало на дума }
           if IsAlpha(ch) then begin
             wrd := ExtractWordFromPos(currentLine, p);
             translatedLine := translatedLine + TranslateWord(wrd, invert);
@@ -221,7 +240,9 @@ begin
           end;
         end;
       end
+      { Ако сме в регион }
       else begin
+        { Проверяваме дали региона(коментара) е едноредов }
         if CurrentRegion^.stop = '' then begin
           translatedLine := translatedLine +
                             UTF8Copy(currentLine, p, currentLineLen);
@@ -229,14 +250,18 @@ begin
           break;
         end;
         j := 0;
+        { Търсим за низове които трябва да пренебрегнем }
         while j < CurrentRegion^.skip.Count do begin
           if IsSubStringAtPos(currentLine, CurrentRegion^.skip[j], p) then begin
             translatedLine := translatedLine + CurrentRegion^.skip[j];
             p := p + UTF8Length(CurrentRegion^.skip[j]);
+            { започваме търсенето отначало }
             j := 0;
+            continue;
           end;
         j := j + 1;
         end;
+        { Проверяваме за края на региона }
         if IsSubStringAtPos(currentLine, CurrentRegion^.stop, p) then begin
           translatedLine := translatedLine + CurrentRegion^.stop;
           p := p + UTF8Length(CurrentRegion^.stop);
