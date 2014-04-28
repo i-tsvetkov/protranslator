@@ -167,13 +167,18 @@ end;
 { Превежда дума invert показва дали превода е обърнат }
 function TranslateWord(wrd : string; invert : boolean) : string;
 var
+  b       : boolean;
   i       : integer;
   w, n, v : string;
 begin
   if invert then begin
     for i := 0 to KeyWords.Count-1 do begin
       KeyWords.GetNameValue(i, n, v);
-      if wrd = v then begin
+      if KeyWords.CaseSensitive then
+        b := wrd = v
+      else
+        b := UTF8LowerCase(wrd) = UTF8LowerCase(v);
+      if b then begin
         TranslateWord := n;
         exit;
       end;
