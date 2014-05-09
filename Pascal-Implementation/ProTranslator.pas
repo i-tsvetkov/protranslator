@@ -1,6 +1,8 @@
-program ProTranslator;
+unit ProTranslator;
 
 {$mode objfpc}{$H+}
+
+interface
 
 uses
   Classes,
@@ -8,6 +10,14 @@ uses
   LCLProc,
   StrUtils,
   SysUtils;
+
+procedure Panic(msg : string);
+function GetLangName(filename : string) : string;
+function Translate(codeLines : TStringList;
+                   lang      : string;
+                   invert    : boolean) : string;
+
+implementation
 
 type
   region = record
@@ -285,19 +295,12 @@ begin
   translatedLines.Free;
 end;
 
-var
-  sourceLines : TStringList;
-  filename    : string;
-begin
-  filename := ParamStr(1);
-  if not FileExists(filename) then
-    Panic(filename + ' не е намерен.');
-  sourceLines := TStringList.Create;
-  sourceLines.LoadFromFile(filename);
-  ProTranslatorInit();
-  write(Translate(sourceLines, GetLangName(filename), false));
-  sourceLines.Free;
-  ProTranslatorFree();
+initialization
+  ProTranslatorInit;
+
+finalization
+  ProTranslatorFree;
+
 end.
 
 
