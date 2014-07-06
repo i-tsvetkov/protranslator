@@ -8,10 +8,9 @@ uses
   Classes,
   IniFiles,
   LCLProc,
-  StrUtils,
   SysUtils;
 
-procedure Panic(msg : string);
+function GetErrors() : string;
 function GetLangName(filename : string) : string;
 function Translate(codeLines : TStringList;
                    lang      : string;
@@ -28,6 +27,9 @@ type
 
 const
   CONFIG_FILE = 'config.ini';
+  NOT_ALPHA   = [ #0 .. ' ', '!', '"', '#', '$', '%', '&', '''', '(', ')',
+                '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?',
+                '@', '[', '\', ']', '^', '`', '{', '|', '}', '~' ];
 
 var
   Regions       : array of region;
@@ -36,11 +38,13 @@ var
   KeyWords      : TStringList;
   IniFile       : TMemIniFile;
   LastLang      : string;
+  ConfigIsBad   : boolean;
+  ConfigErrors  : TStringList;
 
 { Проверява дали s е буква }
 function IsAlpha(s : string) : boolean;
 begin
-  IsAlpha := not (s[1] in StdWordDelims);
+  IsAlpha := not (s[1] in NOT_ALPHA);
 end;
 
 { Извлича дума от s намираща се на p позиция }
@@ -86,11 +90,60 @@ begin
   IsSubStringAtPos := true;
 end;
 
-{ Принтира съобщение за грешка и затваря програмата }
+function GetErrors() : string;
+begin
+  if ConfigIsBad then
+    GetErrors := ConfigErrors.Text
+  else
+    GetErrors := ''
+end;
+
 procedure Panic(msg : string);
 begin
-  writeln(msg + ' - ' + DateTimeToStr(Now));
-  halt;
+  ConfigIsBad := true;
+  ConfigErrors.Append('Грешка (' + DateTimeToStr(Now) + ') : ' + msg);
+end;
+
+procedure CheckConfig();
+var
+  i, j, rCount                  : integer;
+  configFile, keyWordFile, jStr : string;
+  sections                      : TStringList;
+begin
+  configFile := ExtractFilePath(ParamStr(0)) + CONFIG_FILE;
+  if not FileExists(configFile) then
+    Panic('Конфигурационния файл ' + configFile + ' не е намерен.');
+  sections := TStringList.Create;
+  IniFile.ReadSections(sections);
+  for i := 0 to sections.Count-1 do begin
+    if not IniFile.ValueExists(sections[i], 'FileExtensions') then
+      Panic('В раздела ' + sections[i] +
+            ' задължителния ключ FileExtensions липсва.');
+    if not IniFile.ValueExists(sections[i], 'RegionsCount') then
+      Panic('В раздела ' + sections[i] +
+            ' задължителния ключ RegionsCount липсва.');
+    if not IniFile.ValueExists(sections[i], 'KeyWordFile') then
+      Panic('В раздела ' + sections[i] +
+            ' задължителния ключ KeyWordFile липсва.')
+    else begin
+      keyWordFile := ExtractFilePath(ParamStr(0)) +
+                     IniFile.ReadString(sections[i], 'KeyWordFile', '');
+      if not FileExists(keyWordFile) then
+        Panic('Файла ' + keyWordFile + ' указан от ключ KeyWordFile в раздел '
+              + sections[i] + ' не е намерен.');
+    end;
+    rCount := IniFile.ReadInteger(sections[i], 'RegionsCount', 0);
+    for j := 0 to rCount-1 do begin
+      jStr := IntToStr(j+1);
+      if not IniFile.ValueExists(sections[i], 'Start'+ jStr) then
+        Panic('Ключа Start'+ jStr + ' от раздел ' + sections[i] + ' липсва.');
+      if not IniFile.ValueExists(sections[i], 'Stop' + jStr) then
+        Panic('Ключа Stop' + jStr + ' от раздел ' + sections[i] + ' липсва.');
+      if not IniFile.ValueExists(sections[i], 'Skip' + jStr) then
+        Panic('Ключа Skip' + jStr + ' от раздел ' + sections[i] + ' липсва.');
+    end;
+  end;
+  sections.Free;
 end;
 
 { Инициализира ресурси необходими на преводача }
@@ -98,14 +151,15 @@ procedure ProTranslatorInit();
 var
   configFile : string;
 begin
+  ConfigIsBad  := false;
+  ConfigErrors := TStringList.Create;
   configFile := ExtractFilePath(ParamStr(0)) + CONFIG_FILE;
-  if not FileExists(configFile) then
-    Panic(configFile + ' не е намерен.');
   CurrentRegion := nil;
   RegionsCount  := 0;
   LastLang := '';
   IniFile  := TMemIniFile.Create(configFile);
   KeyWords := TStringList.Create;
+  CheckConfig();
 end;
 
 { Освобождава ресурсите използвани от преводача }
@@ -113,6 +167,7 @@ procedure ProTranslatorFree();
 begin
   KeyWords.Free;
   IniFile.Free;
+  ConfigErrors.Free;
   Regions:=nil;
 end;
 
@@ -123,11 +178,13 @@ var
   fileExt, fileExtens : string;
   sections            : TStringList;
 begin
+  if ConfigIsBad then begin
+    GetLangName := '';
+    exit;
+  end;
   sections := TStringList.Create;
   IniFile.ReadSections(sections);
   for i := 0 to sections.Count-1 do begin
-    if not IniFile.ValueExists(sections[i], 'FileExtensions') then
-      Panic('Раздел ' + sections[i] + ' е непълен.');
     fileExt    := IniFile.ReadString(sections[i], 'FileExtensions', '') + ' ';
     fileExtens := ExtractFileExt(filename) + ' ';
     if Pos(fileExtens, fileExt) <> 0 then begin
@@ -137,28 +194,25 @@ begin
     end;
   end;
   sections.Free;
-  Panic('Не е намерен раздел отговарящ на файла.');
+  GetLangName := '';
 end;
 
 { Зарежда настройки от раздела lang на config.ini }
-procedure LoadSettings(lang : string);
+function LoadSettings(lang : string) : boolean;
 var
   i                 : integer;
   keyWordFile, iStr : string;
 begin
-  if not (IniFile.ValueExists(lang, 'KeyWordFile') or
-          IniFile.ValueExists(lang, 'RegionsCount')) then
-    Panic('Раздел ' + lang + ' е непълен.');
+  if not IniFile.SectionExists(lang) then begin
+    LoadSettings := false;
+    exit;
+  end;
   for i := 0 to RegionsCount-1 do
     Regions[i].skip.Free;
   RegionsCount := IniFile.ReadInteger(lang, 'RegionsCount', 0);
   SetLength(Regions, RegionsCount);
   for i := 0 to RegionsCount-1 do begin
     iStr := IntToStr(i+1);
-    if not (IniFile.ValueExists(lang, 'Start'+iStr) or
-            IniFile.ValueExists(lang, 'Stop' +iStr) or
-            IniFile.ValueExists(lang, 'Skip' +iStr)) then
-      Panic('Регион ' + iStr + ' на раздел' + lang + ' е непълен.');
     Regions[i].start := IniFile.ReadString(lang, 'Start'+iStr, '');
     Regions[i].stop  := IniFile.ReadString(lang, 'Stop' +iStr, '');
     Regions[i].skip  := TStringList.Create;
@@ -168,10 +222,9 @@ begin
   KeyWords.CaseSensitive := IniFile.ReadBool(lang, 'CaseSensitive', true);
   keyWordFile := ExtractFilePath(ParamStr(0)) +
                  IniFile.ReadString(lang, 'KeyWordFile', '');
-  if not FileExists(keyWordFile) then
-    Panic(keyWordFile + ' не е намерен.');
   KeyWords.LoadFromFile(keyWordFile);
   LastLang := lang;
+  LoadSettings := true;
 end;
 
 { Превежда дума invert показва дали превода е обърнат }
@@ -216,8 +269,15 @@ var
   p, i, j, currentLineLen              : integer;
   translatedLines                      : TStringList;
 begin
+  if ConfigIsBad then begin
+    Translate := codeLines.Text;
+    exit;
+  end;
   if lang <> LastLang then
-    LoadSettings(lang);
+    if not LoadSettings(lang) then begin
+      Translate := codeLines.Text;
+      exit;
+    end;
   translatedLines := TStringList.Create;
   CurrentRegion := nil;
   { Четем кода ред по ред }
