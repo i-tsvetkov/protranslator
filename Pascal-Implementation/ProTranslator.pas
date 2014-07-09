@@ -10,6 +10,18 @@ uses
   LCLProc,
   SysUtils;
 
+{ Само тези три функции се предоставят за публично ползване:
+  GetErrors   - ако има грешки в конфигурацията ще върне информация за
+                настъпилите грешки в противен случай празен низ.
+  GetLangName - взима като аргумент файлово име и връща името на раздела от
+                конфигурационния файл отговарящ за него.
+  Translate   - превежда код като codeLines е кода за превод
+                lang е името на раздела отговарящ на кода
+                (може да се намери с GetLangName).
+                invert показва дали превода трябва да е от код до преведен код
+                или от преведен код до код.
+                Ако има настъпили грешки или името на раздела не съществува
+                ще бъде върнат оригиналния код без промени. }
 function GetErrors() : string;
 function GetLangName(filename : string) : string;
 function Translate(codeLines : TStringList;
@@ -90,6 +102,7 @@ begin
   IsSubStringAtPos := true;
 end;
 
+{ Връща информация за неправилна конфигурация. }
 function GetErrors() : string;
 begin
   if ConfigIsBad then
@@ -98,12 +111,14 @@ begin
     GetErrors := ''
 end;
 
+{ Регистрира настъпили грешки. }
 procedure Panic(msg : string);
 begin
   ConfigIsBad := true;
   ConfigErrors.Append('Грешка (' + DateTimeToStr(Now) + ') : ' + msg);
 end;
 
+{ Проверява конфигурацията за нередности. }
 procedure CheckConfig();
 var
   i, j, rCount                  : integer;
@@ -119,9 +134,6 @@ begin
     if not IniFile.ValueExists(sections[i], 'FileExtensions') then
       Panic('В раздела ' + sections[i] +
             ' задължителния ключ FileExtensions липсва.');
-    if not IniFile.ValueExists(sections[i], 'RegionsCount') then
-      Panic('В раздела ' + sections[i] +
-            ' задължителния ключ RegionsCount липсва.');
     if not IniFile.ValueExists(sections[i], 'KeyWordFile') then
       Panic('В раздела ' + sections[i] +
             ' задължителния ключ KeyWordFile липсва.')
@@ -132,15 +144,26 @@ begin
         Panic('Файла ' + keyWordFile + ' указан от ключ KeyWordFile в раздел '
               + sections[i] + ' не е намерен.');
     end;
-    rCount := IniFile.ReadInteger(sections[i], 'RegionsCount', 0);
-    for j := 0 to rCount-1 do begin
-      jStr := IntToStr(j+1);
-      if not IniFile.ValueExists(sections[i], 'Start'+ jStr) then
-        Panic('Ключа Start'+ jStr + ' от раздел ' + sections[i] + ' липсва.');
-      if not IniFile.ValueExists(sections[i], 'Stop' + jStr) then
-        Panic('Ключа Stop' + jStr + ' от раздел ' + sections[i] + ' липсва.');
-      if not IniFile.ValueExists(sections[i], 'Skip' + jStr) then
-        Panic('Ключа Skip' + jStr + ' от раздел ' + sections[i] + ' липсва.');
+    if not IniFile.ValueExists(sections[i], 'RegionsCount') then
+      Panic('В раздела ' + sections[i] +
+            ' задължителния ключ RegionsCount липсва.')
+    else begin
+      rCount := IniFile.ReadInteger(sections[i], 'RegionsCount', 0);
+      if rCount < 0 then
+        Panic('RegionsCount в раздел ' + sections[i] + ' е отрицателен.')
+      else
+        for j := 0 to rCount-1 do begin
+          jStr := IntToStr(j+1);
+          if not IniFile.ValueExists(sections[i], 'Start'+ jStr) then
+            Panic('Ключа Start'+ jStr + ' от раздел '
+                  + sections[i] + ' липсва.');
+          if not IniFile.ValueExists(sections[i], 'Stop' + jStr) then
+            Panic('Ключа Stop' + jStr + ' от раздел '
+                  + sections[i] + ' липсва.');
+          if not IniFile.ValueExists(sections[i], 'Skip' + jStr) then
+            Panic('Ключа Skip' + jStr + ' от раздел '
+                  + sections[i] + ' липсва.');
+        end;
     end;
   end;
   sections.Free;
