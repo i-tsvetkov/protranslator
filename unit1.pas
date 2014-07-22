@@ -29,6 +29,7 @@ type
     EditKeyWordsAction: TMenuItem;
     MenuItem4: TMenuItem;
     ErrorsMI: TMenuItem;
+    SaveAsMI: TMenuItem;
     SourceCodeMI: TMenuItem;
     MenuItem6: TMenuItem;
     ParallelTB: TToolButton;
@@ -122,17 +123,20 @@ type
     procedure ListBox1Click(Sender: TObject);
     procedure ListBox1DblClick(Sender: TObject);
     procedure MenuItem17Click(Sender: TObject);
+    procedure SaveAsMIClick(Sender: TObject);
     procedure OpenInEditorActionExecute(Sender: TObject);
     procedure OpenMIClick(Sender: TObject);
     procedure ParallelMIClick(Sender: TObject);
     procedure SaveMIClick(Sender: TObject);
     procedure ShowKeyWordActionExecute(Sender: TObject);
+    procedure SynEdit1Change(Sender: TObject);
     procedure SynEdit1Click(Sender: TObject);
     procedure SynEdit1ClickLink(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure SynEdit1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure SynEdit1StatusChange(Sender: TObject; Changes: TSynStatusChanges);
+    procedure SynEdit2Change(Sender: TObject);
     procedure SynEdit2StatusChange(Sender: TObject; Changes: TSynStatusChanges);
     procedure SyntaxCppMIClick(Sender: TObject);
     procedure SyntaxPasMIClick(Sender: TObject);
@@ -191,12 +195,15 @@ begin
   if SynEdit1.TopLine<>SynEdit2.TopLine then SynEdit2.TopLine:=SynEdit1.TopLine;
 end;
 
+procedure TForm1.SynEdit2Change(Sender: TObject);
+begin
+
+end;
+
 procedure TForm1.SaveMIClick(Sender: TObject);
 begin
-  if SaveDialog1.Execute then
-  begin
-    SynEdit1.Lines.SaveToFile(SaveDialog1.FileName);
-  end;
+  //if SaveDialog1.Execute then
+    SynEdit1.Lines.SaveToFile(OpenDialog1.FileName);
 end;
 
 procedure TForm1.ShowKeyWordActionExecute(Sender: TObject);
@@ -214,6 +221,11 @@ begin
      SynEdit1.SetHighlightSearch('', [ssoEntireScope]);
      SynEdit2.SetHighlightSearch('', [ssoEntireScope]);
     end;
+end;
+
+procedure TForm1.SynEdit1Change(Sender: TObject);
+begin
+
 end;
 
 procedure TForm1.SynEdit1Click(Sender: TObject);
@@ -275,7 +287,12 @@ end;
 procedure TForm1.OpenMIClick(Sender: TObject);
 begin
   if OpenDialog1.Execute then
-    OpenFile(OpenDialog1.FileName);
+    begin
+         OpenFile(OpenDialog1.FileName);
+         SaveMI.Enabled := true;
+         ToolButton3.Enabled:= true;
+         SaveAsMI.Enabled := true;
+    end;
 end;
 
 procedure TForm1.ExitMIClick(Sender: TObject);
@@ -317,6 +334,10 @@ begin
   Keywords:= TStringList.Create;
   CommandsIni:= TMemIniFile.Create('');
   SyntaxPasMI.Click;
+
+  SaveMI.Enabled:= false;
+  ToolButton3.Enabled:= false;
+  SaveAsMI.Enabled:= false;
 
   if Application.ParamCount > 0 then
     if FileExists(Application.Params[1]) then
@@ -392,6 +413,25 @@ end;
 procedure TForm1.MenuItem17Click(Sender: TObject);
 begin
   OpenFileInEditor('http://www.protranslator.gymnasium-lom.com/');
+end;
+
+procedure TForm1.SaveAsMIClick(Sender: TObject);
+var
+  saveDialog : TSaveDialog;
+begin
+    saveDialog := TSaveDialog.Create(self);
+    saveDialog.Title := 'Запиши като';
+    saveDialog.InitialDir := GetCurrentDir;
+    saveDialog.Filter := 'Pascal file|*.pas| Text file |*.txt|';
+    saveDialog.DefaultExt := 'pas';
+    saveDialog.FilterIndex := 1;
+
+    if saveDialog.Execute
+       then ShowMessage('File : '+saveDialog.FileName)
+       else ShowMessage('Save file was cancelled');
+
+  // Free up the dialog
+  saveDialog.Free;
 end;
 
 procedure TForm1.OpenInEditorActionExecute(Sender: TObject);

@@ -11,7 +11,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   ShowHint = True
-  LCLVersion = '0.9.30'
+  LCLVersion = '1.2.4.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
@@ -37,7 +37,7 @@ object Form1: TForm1
     ShowCaptions = True
     TabOrder = 1
     object ToolButton1: TToolButton
-      Left = 338
+      Left = 344
       Top = 2
       Action = ShowKeyWordAction
       AutoSize = True
@@ -59,12 +59,12 @@ object Form1: TForm1
     object ToolButton4: TToolButton
       Left = 103
       Top = 2
-      Width = 8
+      Width = 10
       Caption = 'ToolButton4'
       Style = tbsSeparator
     end
     object TranslateNowTB: TToolButton
-      Left = 226
+      Left = 230
       Top = 2
       Caption = 'Преведи'
       Enabled = False
@@ -72,43 +72,43 @@ object Form1: TForm1
       OnClick = TranslateNowMIClick
     end
     object ToolButton6: TToolButton
-      Left = 330
+      Left = 334
       Top = 2
-      Width = 8
+      Width = 10
       Caption = 'ToolButton6'
       Style = tbsSeparator
     end
     object ToolButton7: TToolButton
-      Left = 218
+      Left = 220
       Top = 2
-      Width = 8
+      Width = 10
       Caption = 'ToolButton7'
       Style = tbsSeparator
     end
     object ToolButton9: TToolButton
-      Left = 111
+      Left = 113
       Top = 2
       Action = EditUndoAction
     end
     object ToolButton10: TToolButton
-      Left = 162
+      Left = 164
       Top = 2
       Action = EditRedoAction
     end
     object ToolButton11: TToolButton
-      Left = 502
+      Left = 508
       Top = 2
       Action = OpenInEditorAction
     end
     object ToolButton13: TToolButton
-      Left = 613
+      Left = 619
       Top = 2
-      Width = 8
+      Width = 10
       Caption = 'ToolButton13'
       Style = tbsSeparator
     end
     object ToolButton14: TToolButton
-      Left = 621
+      Left = 629
       Top = 2
       Caption = 'Конструкции'
       ImageIndex = 4
@@ -116,13 +116,13 @@ object Form1: TForm1
       Style = tbsCheck
     end
     object ToolButton15: TToolButton
-      Left = 420
+      Left = 426
       Top = 2
       Action = KeywordInfoAction
       Caption = 'Информация'
     end
     object ParallelTB: TToolButton
-      Left = 281
+      Left = 285
       Top = 2
       Caption = 'Сравни'
       Enabled = False
@@ -151,50 +151,24 @@ object Form1: TForm1
     Gutter.Width = 57
     Gutter.MouseActions = <    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccAny
         ClickDir = cdDown
-        Command = 13
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcOnMainGutterClick
       end    
       item
-        Shift = []
-        ShiftMask = []
         Button = mbRight
-        ClickCount = ccSingle
-        ClickDir = cdUp
-        Command = 12
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcContextMenu
       end>
     RightGutter.Width = 0
     RightGutter.MouseActions = <    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccAny
         ClickDir = cdDown
-        Command = 13
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcOnMainGutterClick
       end    
       item
-        Shift = []
-        ShiftMask = []
         Button = mbRight
-        ClickCount = ccSingle
-        ClickDir = cdUp
-        Command = 12
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcContextMenu
       end>
     Keystrokes = <    
       item
@@ -619,139 +593,113 @@ object Form1: TForm1
       end>
     MouseActions = <    
       item
-        Shift = []
         ShiftMask = [ssShift, ssAlt]
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 1
+        Command = emcStartSelections
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
         Shift = [ssShift]
         ShiftMask = [ssShift, ssAlt]
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 1
+        Command = emcStartSelections
         MoveCaret = True
         Option = 1
-        Priority = 0
       end    
       item
         Shift = [ssAlt]
         ShiftMask = [ssShift, ssAlt]
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 3
+        Command = emcStartColumnSelections
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
         Shift = [ssShift, ssAlt]
         ShiftMask = [ssShift, ssAlt]
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 3
+        Command = emcStartColumnSelections
         MoveCaret = True
         Option = 1
-        Priority = 0
       end    
       item
-        Shift = []
-        ShiftMask = []
         Button = mbRight
-        ClickCount = ccSingle
-        ClickDir = cdUp
-        Command = 12
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcContextMenu
       end    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccDouble
         ClickDir = cdDown
-        Command = 6
+        Command = emcSelectWord
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccTriple
         ClickDir = cdDown
-        Command = 7
+        Command = emcSelectLine
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccQuad
         ClickDir = cdDown
-        Command = 8
+        Command = emcSelectPara
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
-        Shift = []
-        ShiftMask = []
         Button = mbMiddle
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 10
+        Command = emcPasteSelection
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
         Shift = [ssCtrl]
         ShiftMask = [ssShift, ssAlt, ssCtrl]
-        Button = mbLeft
-        ClickCount = ccSingle
-        ClickDir = cdUp
-        Command = 11
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcMouseLink
       end>
+    MouseTextActions = <>
     MouseSelActions = <    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 9
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcStartDragMove
       end>
+    VisibleSpecialChars = [vscSpace, vscTabAtLast]
     ScrollBars = ssAutoBoth
+    SelectedColor.FrameEdges = sfeAround
+    SelectedColor.BackPriority = 50
+    SelectedColor.ForePriority = 50
+    SelectedColor.FramePriority = 50
+    SelectedColor.BoldPriority = 50
+    SelectedColor.ItalicPriority = 50
+    SelectedColor.UnderlinePriority = 50
+    SelectedColor.StrikeOutPriority = 50
+    IncrementColor.FrameEdges = sfeAround
+    HighlightAllColor.FrameEdges = sfeAround
     BracketHighlightStyle = sbhsBoth
+    BracketMatchColor.Background = clNone
+    BracketMatchColor.Foreground = clNone
+    BracketMatchColor.FrameEdges = sfeAround
+    BracketMatchColor.Style = [fsBold]
+    FoldedCodeColor.Background = clNone
+    FoldedCodeColor.Foreground = clGray
+    FoldedCodeColor.FrameColor = clGray
+    FoldedCodeColor.FrameEdges = sfeAround
+    MouseLinkColor.Background = clNone
+    MouseLinkColor.Foreground = clBlue
+    MouseLinkColor.FrameEdges = sfeAround
+    LineHighlightColor.Background = clNone
+    LineHighlightColor.Foreground = clNone
+    LineHighlightColor.FrameEdges = sfeAround
+    OnChange = SynEdit1Change
     OnStatusChange = SynEdit1StatusChange
     inline SynLeftGutterPartList1: TSynGutterPartList
       object SynGutterMarks1: TSynGutterMarks
         Width = 24
+        MouseActions = <>
       end
       object SynGutterLineNumber1: TSynGutterLineNumber
         Width = 17
         MouseActions = <>
         MarkupInfo.Background = clBtnFace
         MarkupInfo.Foreground = clNone
+        MarkupInfo.FrameEdges = sfeAround
         DigitCount = 2
         ShowOnlyLineNumbersMultiplesOf = 1
         ZeroStart = False
@@ -759,35 +707,29 @@ object Form1: TForm1
       end
       object SynGutterChanges1: TSynGutterChanges
         Width = 4
+        MouseActions = <>
         ModifiedColor = 59900
         SavedColor = clGreen
       end
       object SynGutterSeparator1: TSynGutterSeparator
         Width = 2
+        MouseActions = <>
+        MarkupInfo.Background = clWhite
+        MarkupInfo.Foreground = clGray
+        MarkupInfo.FrameEdges = sfeAround
       end
       object SynGutterCodeFolding1: TSynGutterCodeFolding
         MouseActions = <        
           item
-            Shift = []
-            ShiftMask = []
             Button = mbRight
-            ClickCount = ccSingle
-            ClickDir = cdUp
-            Command = 16
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcCodeFoldContextMenu
           end        
           item
-            Shift = []
             ShiftMask = [ssShift]
             Button = mbMiddle
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 14
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcCodeFoldCollaps
           end        
           item
             Shift = [ssShift]
@@ -795,64 +737,43 @@ object Form1: TForm1
             Button = mbMiddle
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 14
-            MoveCaret = False
+            Command = emcCodeFoldCollaps
             Option = 1
-            Priority = 0
           end        
           item
-            Shift = []
-            ShiftMask = []
-            Button = mbLeft
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 0
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcNone
           end>
         MarkupInfo.Background = clNone
         MarkupInfo.Foreground = clGray
+        MarkupInfo.FrameEdges = sfeAround
         MouseActionsExpanded = <        
           item
-            Shift = []
-            ShiftMask = []
-            Button = mbLeft
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 14
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcCodeFoldCollaps
           end>
         MouseActionsCollapsed = <        
           item
             Shift = [ssCtrl]
             ShiftMask = [ssCtrl]
-            Button = mbLeft
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 15
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcCodeFoldExpand
           end        
           item
-            Shift = []
             ShiftMask = [ssCtrl]
-            Button = mbLeft
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 15
-            MoveCaret = False
+            Command = emcCodeFoldExpand
             Option = 1
-            Priority = 0
           end>
       end
     end
   end
   inline SynEdit2: TSynEdit
-    Left = 461
+    Left = 466
     Height = 361
     Top = 42
     Width = 466
@@ -870,50 +791,24 @@ object Form1: TForm1
     Gutter.Width = 57
     Gutter.MouseActions = <    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccAny
         ClickDir = cdDown
-        Command = 13
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcOnMainGutterClick
       end    
       item
-        Shift = []
-        ShiftMask = []
         Button = mbRight
-        ClickCount = ccSingle
-        ClickDir = cdUp
-        Command = 12
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcContextMenu
       end>
     RightGutter.Width = 0
     RightGutter.MouseActions = <    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccAny
         ClickDir = cdDown
-        Command = 13
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcOnMainGutterClick
       end    
       item
-        Shift = []
-        ShiftMask = []
         Button = mbRight
-        ClickCount = ccSingle
-        ClickDir = cdUp
-        Command = 12
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcContextMenu
       end>
     Keystrokes = <    
       item
@@ -1338,138 +1233,112 @@ object Form1: TForm1
       end>
     MouseActions = <    
       item
-        Shift = []
         ShiftMask = [ssShift, ssAlt]
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 1
+        Command = emcStartSelections
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
         Shift = [ssShift]
         ShiftMask = [ssShift, ssAlt]
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 1
+        Command = emcStartSelections
         MoveCaret = True
         Option = 1
-        Priority = 0
       end    
       item
         Shift = [ssAlt]
         ShiftMask = [ssShift, ssAlt]
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 3
+        Command = emcStartColumnSelections
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
         Shift = [ssShift, ssAlt]
         ShiftMask = [ssShift, ssAlt]
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 3
+        Command = emcStartColumnSelections
         MoveCaret = True
         Option = 1
-        Priority = 0
       end    
       item
-        Shift = []
-        ShiftMask = []
         Button = mbRight
-        ClickCount = ccSingle
-        ClickDir = cdUp
-        Command = 12
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcContextMenu
       end    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccDouble
         ClickDir = cdDown
-        Command = 6
+        Command = emcSelectWord
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccTriple
         ClickDir = cdDown
-        Command = 7
+        Command = emcSelectLine
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
         ClickCount = ccQuad
         ClickDir = cdDown
-        Command = 8
+        Command = emcSelectPara
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
-        Shift = []
-        ShiftMask = []
         Button = mbMiddle
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 10
+        Command = emcPasteSelection
         MoveCaret = True
-        Option = 0
-        Priority = 0
       end    
       item
         Shift = [ssCtrl]
         ShiftMask = [ssShift, ssAlt, ssCtrl]
-        Button = mbLeft
-        ClickCount = ccSingle
-        ClickDir = cdUp
-        Command = 11
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcMouseLink
       end>
+    MouseTextActions = <>
     MouseSelActions = <    
       item
-        Shift = []
-        ShiftMask = []
-        Button = mbLeft
-        ClickCount = ccSingle
         ClickDir = cdDown
-        Command = 9
-        MoveCaret = False
-        Option = 0
-        Priority = 0
+        Command = emcStartDragMove
       end>
+    VisibleSpecialChars = [vscSpace, vscTabAtLast]
+    SelectedColor.FrameEdges = sfeAround
+    SelectedColor.BackPriority = 50
+    SelectedColor.ForePriority = 50
+    SelectedColor.FramePriority = 50
+    SelectedColor.BoldPriority = 50
+    SelectedColor.ItalicPriority = 50
+    SelectedColor.UnderlinePriority = 50
+    SelectedColor.StrikeOutPriority = 50
+    IncrementColor.FrameEdges = sfeAround
+    HighlightAllColor.FrameEdges = sfeAround
     BracketHighlightStyle = sbhsBoth
+    BracketMatchColor.Background = clNone
+    BracketMatchColor.Foreground = clNone
+    BracketMatchColor.FrameEdges = sfeAround
+    BracketMatchColor.Style = [fsBold]
+    FoldedCodeColor.Background = clNone
+    FoldedCodeColor.Foreground = clGray
+    FoldedCodeColor.FrameColor = clGray
+    FoldedCodeColor.FrameEdges = sfeAround
+    MouseLinkColor.Background = clNone
+    MouseLinkColor.Foreground = clBlue
+    MouseLinkColor.FrameEdges = sfeAround
+    LineHighlightColor.Background = clNone
+    LineHighlightColor.Foreground = clNone
+    LineHighlightColor.FrameEdges = sfeAround
+    OnChange = SynEdit2Change
     OnStatusChange = SynEdit2StatusChange
     inline SynLeftGutterPartList1: TSynGutterPartList
       object SynGutterMarks1: TSynGutterMarks
         Width = 24
+        MouseActions = <>
       end
       object SynGutterLineNumber1: TSynGutterLineNumber
         Width = 17
         MouseActions = <>
         MarkupInfo.Background = clBtnFace
         MarkupInfo.Foreground = clNone
+        MarkupInfo.FrameEdges = sfeAround
         DigitCount = 2
         ShowOnlyLineNumbersMultiplesOf = 1
         ZeroStart = False
@@ -1477,35 +1346,29 @@ object Form1: TForm1
       end
       object SynGutterChanges1: TSynGutterChanges
         Width = 4
+        MouseActions = <>
         ModifiedColor = 59900
         SavedColor = clGreen
       end
       object SynGutterSeparator1: TSynGutterSeparator
         Width = 2
+        MouseActions = <>
+        MarkupInfo.Background = clWhite
+        MarkupInfo.Foreground = clGray
+        MarkupInfo.FrameEdges = sfeAround
       end
       object SynGutterCodeFolding1: TSynGutterCodeFolding
         MouseActions = <        
           item
-            Shift = []
-            ShiftMask = []
             Button = mbRight
-            ClickCount = ccSingle
-            ClickDir = cdUp
-            Command = 16
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcCodeFoldContextMenu
           end        
           item
-            Shift = []
             ShiftMask = [ssShift]
             Button = mbMiddle
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 14
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcCodeFoldCollaps
           end        
           item
             Shift = [ssShift]
@@ -1513,58 +1376,37 @@ object Form1: TForm1
             Button = mbMiddle
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 14
-            MoveCaret = False
+            Command = emcCodeFoldCollaps
             Option = 1
-            Priority = 0
           end        
           item
-            Shift = []
-            ShiftMask = []
-            Button = mbLeft
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 0
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcNone
           end>
         MarkupInfo.Background = clNone
         MarkupInfo.Foreground = clGray
+        MarkupInfo.FrameEdges = sfeAround
         MouseActionsExpanded = <        
           item
-            Shift = []
-            ShiftMask = []
-            Button = mbLeft
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 14
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcCodeFoldCollaps
           end>
         MouseActionsCollapsed = <        
           item
             Shift = [ssCtrl]
             ShiftMask = [ssCtrl]
-            Button = mbLeft
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 15
-            MoveCaret = False
-            Option = 0
-            Priority = 0
+            Command = emcCodeFoldExpand
           end        
           item
-            Shift = []
             ShiftMask = [ssCtrl]
-            Button = mbLeft
             ClickCount = ccAny
             ClickDir = cdDown
-            Command = 15
-            MoveCaret = False
+            Command = emcCodeFoldExpand
             Option = 1
-            Priority = 0
           end>
       end
     end
@@ -1611,7 +1453,7 @@ object Form1: TForm1
     end
   end
   object Splitter1: TSplitter
-    Left = 927
+    Left = 461
     Height = 361
     Top = 42
     Width = 5
@@ -1719,6 +1561,10 @@ object Form1: TForm1
         ImageIndex = 9
         ShortCut = 16467
         OnClick = SaveMIClick
+      end
+      object SaveAsMI: TMenuItem
+        Caption = 'Запиши като'
+        OnClick = SaveAsMIClick
       end
       object Separator1MI: TMenuItem
         Caption = '-'
