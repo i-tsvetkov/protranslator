@@ -422,16 +422,12 @@ begin
     saveDialog := TSaveDialog.Create(self);
     saveDialog.Title := 'Запиши като';
     saveDialog.InitialDir := GetCurrentDir;
-    saveDialog.Filter := 'Pascal file|*.pas| Text file |*.txt|';
+    saveDialog.Filter := 'Pascal file|*.pas|C++ file|*.cpp|Text file |*.txt|';
     saveDialog.DefaultExt := 'pas';
     saveDialog.FilterIndex := 1;
+    saveDialog.Execute;
 
-    if saveDialog.Execute
-       then ShowMessage('File : '+saveDialog.FileName)
-       else ShowMessage('Save file was cancelled');
-
-  // Free up the dialog
-  saveDialog.Free;
+    saveDialog.Free;
 end;
 
 procedure TForm1.OpenInEditorActionExecute(Sender: TObject);
