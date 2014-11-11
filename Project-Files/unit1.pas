@@ -419,23 +419,34 @@ end;
 procedure TMainForm.MainSynEditClick(Sender: TObject);
 var word: String;
 begin
-    word:=MainSynEdit.GetWordAtRowCol(MainSynEdit.CaretXY);
-   StatusBar.SimpleText:=Keywords.Values[word];
+   word:=MainSynEdit.GetWordAtRowCol(MainSynEdit.CaretXY);
+   StatusBar.SimpleText:=GetWordDesc(word);
 end;
 
 function TMainForm.GetWordDesc(const AWord: string): string;
 var
   Section: TStringList;
+  w: String;
 begin
-  Result:= Functions.Values[AWord];
+  w:=AWord;
+  if not SourceCodeMI.Checked then
+    if SyntaxPasMI.Checked then
+       w:=Trim(Translate(AWord, GetLangName('.pas'), True))
+    else
+       w:=Trim(Translate(AWord, GetLangName('.cpp'), True));
+
+  Result:=Keywords.Values[w];
   if Result <> '' then Exit;
-  if CommandsIni.SectionExists(AWord) then begin
-    Section:= TStringList.Create;
-    CommandsIni.ReadSectionValues(AWord, Section);
-    Result:= Section.Text;
-    Section.Free;
-  end
-  else Result:= Keywords.Values[AWord];
+
+  Result:=Functions.Values[w];
+  if Result <> '' then Exit;
+
+  if CommandsIni.SectionExists(w) then begin
+     Section:=TStringList.Create;
+     CommandsIni.ReadSectionValues(w, Section);
+     Result:=Section.Text;
+     Section.Free;
+  end;
 end;
 
 procedure TMainForm.MainSynEditClickLink(Sender: TObject; Button: TMouseButton;
