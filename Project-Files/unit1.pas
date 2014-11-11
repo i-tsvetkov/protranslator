@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, Forms, Controls, Dialogs, Menus,
   ComCtrls, ExtCtrls, StdCtrls, ActnList, StdActns, SynHighlighterCpp,
   SynHighlighterPas, SynEdit, INIFiles, Unit2, Types,
-  LConvEncoding, ProTranslator;
+  LConvEncoding, ProTranslator, LCLIntf;
 
 type
 
@@ -347,7 +347,7 @@ end;
 
 procedure OpenFileInEditor(const AFileName: string);
 begin
-    //ShellExecute(MainForm.Handle, PChar ('open'), PChar (AFileName), PChar (''), PChar (''), 1);
+  OpenDocument(AFileName);
 end;
 
 { TMainForm }
@@ -803,7 +803,7 @@ end;
 
 procedure TMainForm.OpenWebPageMIClick(Sender: TObject);
 begin
-  OpenFileInEditor(WEB_PAGE_URL);
+  OpenURL(WEB_PAGE_URL);
 end;
 
 procedure TMainForm.NewFileCppMIClick(Sender: TObject);
