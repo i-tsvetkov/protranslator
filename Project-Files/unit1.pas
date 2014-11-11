@@ -694,19 +694,50 @@ begin
 end;
 
 procedure TMainForm.ListBox1Click(Sender: TObject);
+var
+  sl        : TStringList;
+  sections  : TStringList;
 begin
-  if ListBox1.ItemIndex>=0 then
-    CommandsIni.ReadSectionValues(ListBox1.Items[ListBox1.ItemIndex], Memo1.Lines);
+  sl:=TStringList.Create;
+  sections:=TStringList.Create;
+  if ListBox1.ItemIndex>=0 then begin
+    CommandsIni.ReadSections(sections);
+    CommandsIni.ReadSectionValues(sections[ListBox1.ItemIndex], sl);
+    sl.Text:=StringReplace(sl.Text, '%', '', [rfReplaceAll]);;
+    if not SourceCodeMI.Checked then begin
+      if SyntaxPasMI.Checked then
+          Memo1.Text:=Translate(sl.Text, GetLangName('.pas'), False)
+      else
+          Memo1.Text:=Translate(sl.Text, GetLangName('.cpp'), False)
+    end
+    else  Memo1.Text:=sl.Text;
+  end;
+  sl.Free;
+  sections.Free;
 end;
 
 procedure TMainForm.ListBox1DblClick(Sender: TObject);
 var
   Spaces: String;
   i: Integer;
+  tsl: TStringList;
+  sections: TStringList;
 begin
+  tsl := TStringList.Create;
+  sections:=TStringList.Create;
   Spaces:='';
   if (ListBox1.Items.Count = 0) or (ListBox1.ItemIndex < 0) then Exit;
-  CommandsIni.ReadSectionValues(ListBox1.Items[ListBox1.ItemIndex], CommandFrm.sl);
+  CommandsIni.ReadSections(sections);
+  CommandsIni.ReadSectionValues(sections[ListBox1.ItemIndex], tsl);
+
+  if not SourceCodeMI.Checked then begin
+    if SyntaxPasMI.Checked then
+        CommandFrm.sl.Text:=Translate(tsl.Text, GetLangName('.pas'), False)
+    else
+        CommandFrm.sl.Text:=Translate(tsl.Text, GetLangName('.cpp'), False)
+  end
+  else  CommandFrm.sl.Text:=tsl.Text;
+
   for i:=0 to MainSynEdit.CaretX-2 do
       Spaces:=Spaces+' ';
   if not InsertConstructionsDialogMI.Checked then
@@ -725,6 +756,8 @@ begin
      end;
   end;
   FocusControl(MainSynEdit);
+  tsl.Free;
+  sections.Free;
 end;
 
 procedure TMainForm.DecreaseFontMIClick(Sender: TObject);
@@ -963,6 +996,8 @@ end;
 procedure TMainForm.TranslateNow();
 var Acur: TPoint;
     Atop: Integer;
+    i   : Integer;
+    lang: String;
 begin
   Acur:=MainSynEdit.CaretXY;
   Atop:=MainSynEdit.TopLine;
@@ -978,6 +1013,20 @@ begin
   CurrentFile.isTranslated:=not CurrentFile.isTranslated;
   SourceCodeMI.Checked:=not SourceCodeMI.Checked;
   TranslateTextMI.Checked:=not SourceCodeMI.Checked;
+
+  if InsertConstructionPanel.Visible then begin
+    if SyntaxPasMI.Checked then
+         lang:=GetLangName('.pas')
+    else lang:=GetLangName('.cpp');
+    if not SourceCodeMI.Checked then begin
+        for i:=0 to ListBox1.Items.Count-1 do
+          ListBox1.Items[i]:=Trim(Translate(ListBox1.Items[i], lang, False));
+    end
+    else begin
+       CommandsIni.ReadSections(ListBox1.Items);
+    end;
+    Memo1.Text:=Translate(Memo1.Text, lang, SourceCodeMI.Checked);
+  end;
 end;
 
 procedure TMainForm.TranslateNowMIClick(Sender: TObject);
@@ -1062,6 +1111,7 @@ begin
 end;
 
 end.
+
 
 
 

@@ -23,7 +23,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure PreviewSynEditChange(Sender: TObject);
     procedure StringGridSetEditText(Sender: TObject; ACol, ARow: Integer;
       const Value: string);
   private
@@ -98,11 +97,6 @@ begin
   Params.Free;
 end;
 
-procedure TCommandFrm.PreviewSynEditChange(Sender: TObject);
-begin
-
-end;
-
 procedure TCommandFrm.StringGridSetEditText(Sender: TObject; ACol, ARow: Integer;
   const Value: string);
 var
@@ -116,4 +110,5 @@ begin
 end;
 
 end.
-
+
+
