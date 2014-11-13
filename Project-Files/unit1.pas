@@ -140,6 +140,7 @@ type
     procedure EditKeyWordsActionClick(Sender: TObject);
     procedure ErrorsMIClick(Sender: TObject);
     procedure ExitMIClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure IncreaseFontMIClick(Sender: TObject);
@@ -169,6 +170,7 @@ type
       Y: Integer);
     procedure MainSynEditStatusChange(Sender: TObject; Changes: TSynStatusChanges);
     procedure ParallelSynEditStatusChange(Sender: TObject; Changes: TSynStatusChanges);
+    procedure SourceCodeMIClick(Sender: TObject);
     procedure SyntaxCppMIClick(Sender: TObject);
     procedure SyntaxPasMIClick(Sender: TObject);
     procedure TranslateNowMIClick(Sender: TObject);
@@ -193,6 +195,7 @@ type
     const
       WEB_PAGE_URL = 'http://www.protranslator.gymnasium-lom.com/';
 
+    procedure TranslateTextMIClick(Sender: TObject);
   private
     Functions, Keywords: TStringList;
     HintWindow : THintWindow;
@@ -210,6 +213,8 @@ type
     function AnswerAskToSave() : Boolean;
     procedure MakeNewFile(mode : NewFileMode);
     procedure EnableAllEditing();
+    procedure LoadCommands();
+    procedure TranslateMemo();
   public
     { public declarations }
     CommandsIni: TMemIniFile;
@@ -254,7 +259,7 @@ begin
           mrYes:
             begin
               SaveMI.Click;
-              Result:=True;
+              Result:=not MainSynEdit.Modified;
             end;
           mrNo:
             Result:=True;
@@ -292,6 +297,7 @@ begin
      ShowWordInfoTB.Enabled:=True;
      ShowWordTB.Enabled:=True;
      ParallelTB.Enabled:=True;
+     EditKeyWordsAction.Enabled:=True;
 end;
 
 procedure TMainForm.MakeNewFile(mode : NewFileMode);
@@ -490,11 +496,11 @@ begin
     Exit;
   end;
 
-  if not FileIsText(AFileName) then begin
+  {if not FileIsText(AFileName) then begin
     MessageDlg('Файла не може да се отвори',
                'Файла не е текстов файл.', mtWarning, [mbYes], '');
     Exit;
-  end;
+  end;}
 
   EnableAllEditing();
 
@@ -513,14 +519,16 @@ begin
   CurrentFile.isTranslated:=False;
   CurrentFile.isWritable:=FileIsWritable(AFileName);
 
-  if Pos(CurrentFile.extension+' ',
-     '.c .cc .cpp .cs .cxx .h .hpp .hxx ') <> 0 then begin
+  if (Pos(CurrentFile.extension+' ',
+     '.c .cc .cpp .cs .cxx .h .hpp .hxx ') <> 0)
+     or (GetLangName(CurrentFile.extension) = 'C++') then begin
      SyntaxCppMI.Click;
      SourceCodeMI.Checked:=True;
      TranslateTextMI.Checked:=False;
   end;
 
-  if Pos(CurrentFile.extension+' ', '.inc .p .pas .pp ') <> 0 then begin
+  if (Pos(CurrentFile.extension+' ', '.inc .p .pas .pp .lpr .dpr ') <> 0)
+     or (GetLangName(CurrentFile.extension) = 'Pascal') then begin
      SyntaxPasMI.Click;
      SourceCodeMI.Checked:=True;
      TranslateTextMI.Checked:=False;
@@ -557,10 +565,18 @@ end;
 
 procedure TMainForm.ExitMIClick(Sender: TObject);
 begin
-  if MainSynEdit.Modified then
+  {if MainSynEdit.Modified then
     if not AnswerAskToSave() then
-      Exit;
+      Exit;}
   Close;
+end;
+
+procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+begin
+  if MainSynEdit.Modified then
+     CanClose:=AnswerAskToSave()
+  else
+     CanClose:=True;
 end;
 
 procedure TMainForm.ApplicationPropertiesDropFiles(Sender: TObject;
@@ -653,7 +669,16 @@ begin
 
   if Application.ParamCount > 0 then
     if FileExists(Application.Params[1]) then
-      OpenFile(Application.Params[1]);
+      OpenFile(Application.Params[1])
+    else begin
+      case Application.Params[1] of
+       'Pascal' : begin SyntaxPasMIClick(nil); ExamplesMI.Enabled:=True; end;
+       'C++'    : begin SyntaxCppMIClick(nil); ExamplesMI.Enabled:=True; end;
+      end;
+      if Application.ParamCount > 1 then
+        if FileExists(Application.Params[2]) then
+           OpenFile(Application.Params[2]);
+    end;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -680,6 +705,10 @@ begin
   Splitter2.Left:=InsertConstructionPanel.Left-1;
   if Sender is TMenuItem then
      InsertConstructsTB.Down:=not InsertConstructsTB.Down;
+  if InsertConstructionPanel.Visible then begin
+     Memo1.Text:='';
+     LoadCommands();
+  end;
 end;
 
 procedure TMainForm.InstructionsMIClick(Sender: TObject);
@@ -727,6 +756,34 @@ begin
   sections.Free;
 end;
 
+procedure TMainForm.LoadCommands();
+var lang: String;
+  Sections: TStringList;
+  i: Integer;
+begin
+  if SyntaxPasMI.Checked then
+     lang:=GetLangName('.pas')
+  else lang:=GetLangName('.cpp');
+  if not SourceCodeMI.Checked then begin
+    Sections:=TStringList.Create;
+    CommandsIni.ReadSections(Sections);
+    for i:=0 to ListBox1.Items.Count-1 do
+      ListBox1.Items[i]:=Trim(Translate(Sections[i], lang, False));
+    Sections.Free;
+  end
+  else begin
+     CommandsIni.ReadSections(ListBox1.Items);
+  end;
+end;
+
+procedure TMainForm.TranslateMemo();
+begin
+  if SyntaxPasMI.Checked then
+    Memo1.Text:=Translate(Memo1.Text, GetLangName('.pas'), SourceCodeMI.Checked)
+  else
+    Memo1.Text:=Translate(Memo1.Text, GetLangName('.cpp'), SourceCodeMI.Checked);
+end;
+
 procedure TMainForm.ListBox1DblClick(Sender: TObject);
 var
   Spaces: String;
@@ -734,10 +791,10 @@ var
   tsl: TStringList;
   sections: TStringList;
 begin
+  if (ListBox1.Items.Count = 0) or (ListBox1.ItemIndex < 0) then Exit;
   tsl := TStringList.Create;
   sections:=TStringList.Create;
   Spaces:='';
-  if (ListBox1.Items.Count = 0) or (ListBox1.ItemIndex < 0) then Exit;
   CommandsIni.ReadSections(sections);
   CommandsIni.ReadSectionValues(sections[ListBox1.ItemIndex], tsl);
 
@@ -934,6 +991,12 @@ begin
   if MainSynEdit.TopLine<>ParallelSynEdit.TopLine then MainSynEdit.TopLine:=ParallelSynEdit.TopLine;
 end;
 
+procedure TMainForm.SourceCodeMIClick(Sender: TObject);
+begin
+  LoadCommands();
+  TranslateMemo();
+end;
+
 procedure TMainForm.LoadSyntax(const KeywordDesc, CommandsFile, FunctionsFile, ExamplesFile: string);
 var
   ParentMI, ChildMI: TMenuItem;
@@ -945,9 +1008,10 @@ begin
   if FileExists(KeywordDesc) then
     Keywords.LoadFromFile(KeywordDesc)
   else Keywords.Clear;
+  Memo1.Text:='';
   if FileExists(CommandsFile) then begin
     CommandsIni.Create(CommandsFile);
-    CommandsIni.ReadSections(ListBox1.Items);
+    LoadCommands();
   end
   else begin
     CommandsIni.Clear;
@@ -1007,8 +1071,6 @@ end;
 procedure TMainForm.TranslateNow();
 var Acur: TPoint;
     Atop: Integer;
-    i   : Integer;
-    lang: String;
 begin
   Acur:=MainSynEdit.CaretXY;
   Atop:=MainSynEdit.TopLine;
@@ -1026,17 +1088,8 @@ begin
   TranslateTextMI.Checked:=not SourceCodeMI.Checked;
 
   if InsertConstructionPanel.Visible then begin
-    if SyntaxPasMI.Checked then
-         lang:=GetLangName('.pas')
-    else lang:=GetLangName('.cpp');
-    if not SourceCodeMI.Checked then begin
-        for i:=0 to ListBox1.Items.Count-1 do
-          ListBox1.Items[i]:=Trim(Translate(ListBox1.Items[i], lang, False));
-    end
-    else begin
-       CommandsIni.ReadSections(ListBox1.Items);
-    end;
-    Memo1.Text:=Translate(Memo1.Text, lang, SourceCodeMI.Checked);
+    LoadCommands();
+    TranslateMemo();
   end;
 end;
 
@@ -1115,15 +1168,20 @@ begin
 TAction(Sender).Enabled :=MainSynEdit.CanUndo;
 end;
 
+procedure TMainForm.TranslateTextMIClick(Sender: TObject);
+begin
+  LoadCommands();
+  TranslateMemo();
+end;
+
 procedure TMainForm.LoadExample(Sender: TObject);
 begin
   if (Sender is TMenuItem) then
     OpenFile(UTF8ToSys(TMenuItem(Sender).Hint));
+  CurrentFile.Destroy;
+  CurrentFile:=TCurrentFile.Create;
 end;
 
 end.
-
-
-
 
 

@@ -8,6 +8,7 @@ object MainForm: TMainForm
   ClientHeight = 595
   ClientWidth = 1068
   Menu = MainMenu
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   ShowHint = True
@@ -2849,12 +2850,14 @@ object MainForm: TMainForm
         Checked = True
         GroupIndex = 2
         RadioItem = True
+        OnClick = SourceCodeMIClick
       end
       object TranslateTextMI: TMenuItem
         AutoCheck = True
         Caption = 'Преведен текст'
         GroupIndex = 2
         RadioItem = True
+        OnClick = TranslateTextMIClick
       end
       object MenuItem6: TMenuItem
         Caption = '-'
@@ -3247,6 +3250,7 @@ object MainForm: TMainForm
       end
       object EditKeyWordsAction: TMenuItem
         Caption = 'Редактирай ключови думи'
+        Enabled = False
         Bitmap.Data = {
           C6070000424DC607000000000000360000002800000016000000160000000100
           200000000000900700006400000064000000000000000000000015282AF61F43
