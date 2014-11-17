@@ -194,6 +194,8 @@ type
 
     const
       WEB_PAGE_URL = 'http://www.protranslator.gymnasium-lom.com/';
+      PAS_MODE = '-mode=Pascal';
+      CPP_MODE = '-mode=C++';
 
     procedure TranslateTextMIClick(Sender: TObject);
   private
@@ -311,31 +313,31 @@ begin
   case mode of
     NewPascal:
       begin
-        SyntaxPasMI.Click;
         SyntaxPasMI.Checked:=True;
         SourceCodeMI.Checked:=True;
         TranslateTextMI.Checked:=False;
+        SyntaxPasMI.Click;
       end;
     NewCpp:
       begin
-        SyntaxCppMI.Click;
         SyntaxCppMI.Checked:=True;
         SourceCodeMI.Checked:=True;
         TranslateTextMI.Checked:=False;
+        SyntaxCppMI.Click;
       end;
     NewTrPascal:
       begin
-        SyntaxPasMI.Click;
         SyntaxPasMI.Checked:=True;
         SourceCodeMI.Checked:=False;
         TranslateTextMI.Checked:=True;
+        SyntaxPasMI.Click;
       end;
     NewTrCpp:
       begin
-        SyntaxCppMI.Click;
         SyntaxCppMI.Checked:=True;
         SourceCodeMI.Checked:=False;
         TranslateTextMI.Checked:=True;
+        SyntaxCppMI.Click;
       end;
   end;
 
@@ -452,7 +454,10 @@ begin
      CommandsIni.ReadSectionValues(w, Section);
      Result:=Section.Text;
      Section.Free;
+     Exit;
   end;
+
+  Result:='';
 end;
 
 procedure TMainForm.MainSynEditClickLink(Sender: TObject; Button: TMouseButton;
@@ -522,28 +527,28 @@ begin
   if (Pos(CurrentFile.extension+' ',
      '.c .cc .cpp .cs .cxx .h .hpp .hxx ') <> 0)
      or (GetLangName(CurrentFile.extension) = 'C++') then begin
-     SyntaxCppMI.Click;
      SourceCodeMI.Checked:=True;
      TranslateTextMI.Checked:=False;
+     SyntaxCppMI.Click;
   end;
 
   if (Pos(CurrentFile.extension+' ', '.inc .p .pas .pp .lpr .dpr ') <> 0)
      or (GetLangName(CurrentFile.extension) = 'Pascal') then begin
-     SyntaxPasMI.Click;
      SourceCodeMI.Checked:=True;
      TranslateTextMI.Checked:=False;
+     SyntaxPasMI.Click;
   end;
 
   if Pos(CurrentFile.extension+' ', '.tcpp ') <> 0 then begin
-     SyntaxCppMI.Click;
      SourceCodeMI.Checked:=False;
      TranslateTextMI.Checked:=True;
+     SyntaxCppMI.Click;
   end;
 
   if Pos(CurrentFile.extension+' ', '.tpas ') <> 0 then begin
-     SyntaxPasMI.Click;
      SourceCodeMI.Checked:=False;
      TranslateTextMI.Checked:=True;
+     SyntaxPasMI.Click;
   end;
 
   Caption:='ProTranslator - ' + SysToUTF8(AFileName);
@@ -622,6 +627,7 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   errorsLog : TStringList;
+  i         : Integer;
 begin
   CurrentFile:=TCurrentFile.Create;
   HintWindow := THintWindow.Create(self);
@@ -667,17 +673,18 @@ begin
     errorsLog.Free;
   end;
 
-  if Application.ParamCount > 0 then
-    if FileExists(Application.Params[1]) then
-      OpenFile(Application.Params[1])
-    else begin
-      case Application.Params[1] of
-       'Pascal' : begin SyntaxPasMIClick(nil); ExamplesMI.Enabled:=True; end;
-       'C++'    : begin SyntaxCppMIClick(nil); ExamplesMI.Enabled:=True; end;
-      end;
-      if Application.ParamCount > 1 then
-        if FileExists(Application.Params[2]) then
-           OpenFile(Application.Params[2]);
+  for i:=1 to Application.ParamCount do
+    if FileExists(Application.Params[i])
+       and (Application.Params[i] <> PAS_MODE)
+       and (Application.Params[i] <> CPP_MODE) then begin
+      OpenFile(Application.Params[i]);
+      break;
+    end;
+
+  for i:=1 to Application.ParamCount do
+    case Application.Params[i] of
+      PAS_MODE : begin SyntaxPasMIClick(nil); ExamplesMI.Enabled:=True; end;
+      CPP_MODE : begin SyntaxCppMIClick(nil); ExamplesMI.Enabled:=True; end;
     end;
 end;
 
@@ -943,7 +950,9 @@ end;
 
 procedure TMainForm.OpenInEditorActionExecute(Sender: TObject);
 begin
-  OpenFileInEditor(OpenDialog.FileName);
+  if CurrentFile.name <> '' then
+    OpenFileInEditor(CurrentFile.path+DirectorySeparator
+                    +CurrentFile.name+CurrentFile.extension);
 end;
 
 procedure TMainForm.ParallelMIClick(Sender: TObject);
