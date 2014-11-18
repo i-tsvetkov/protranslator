@@ -1,5 +1,4 @@
 // да се въведе число и да се отпечата True ако е валиден месец
- 
 program ProverkaMesec;
 var
   chislo: integer;

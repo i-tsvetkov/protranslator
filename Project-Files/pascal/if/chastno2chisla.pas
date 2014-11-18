@@ -1,5 +1,4 @@
 // да се въведат две числа и да се отпечата частното им
-
 program chastno2chisla;
 var
   a, b: integer;

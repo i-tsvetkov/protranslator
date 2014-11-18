@@ -1,5 +1,4 @@
 // да се въведат две числа и да се отпечата по-голямото от тях
-
 program Max2chisla;
 var
   a, b, max: integer;

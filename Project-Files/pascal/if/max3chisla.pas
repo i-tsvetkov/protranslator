@@ -1,5 +1,4 @@
 // да се въведат 3 числа и да се отпечата най-голямото от тях
-
 program max3chisla;
 var
   a, max: integer;
