@@ -1,3 +1,4 @@
+// да се въведе в запис информацията за ученик и да се отпечата в подходящ вид
 program student_info;
 type
   UchenikDanni = record
