@@ -2863,14 +2863,15 @@ object MainForm: TMainForm
         Caption = '-'
       end
       object SyntaxCppMI: TMenuItem
+        AutoCheck = True
         Caption = 'C++'
         GroupIndex = 1
         RadioItem = True
         OnClick = SyntaxCppMIClick
       end
       object SyntaxPasMI: TMenuItem
+        AutoCheck = True
         Caption = 'Pascal'
-        Checked = True
         GroupIndex = 1
         RadioItem = True
         OnClick = SyntaxPasMIClick

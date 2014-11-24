@@ -18,6 +18,7 @@ type
       path         : String;
       encoding     : String;
       extension    : String;
+      fullpath     : string;
       isTranslated : Boolean;
       isWritable   : Boolean;
       constructor Create;
@@ -194,8 +195,11 @@ type
 
     const
       WEB_PAGE_URL = 'http://www.protranslator.gymnasium-lom.com/';
-      PAS_MODE = '-mode=Pascal';
-      CPP_MODE = '-mode=C++';
+      PAS_LANG = 'Pascal';
+      CPP_LANG = 'C++';
+      MODE_OPT = '-mode=';
+      PAS_MODE = MODE_OPT+PAS_LANG;
+      CPP_MODE = MODE_OPT+CPP_LANG;
 
     procedure TranslateTextMIClick(Sender: TObject);
   private
@@ -217,6 +221,8 @@ type
     procedure EnableAllEditing();
     procedure LoadCommands();
     procedure TranslateMemo();
+    function CurrentLang() : string;
+    procedure ResetState();
   public
     { public declarations }
     CommandsIni: TMemIniFile;
@@ -238,6 +244,7 @@ begin
      name:='';
      path:=GetCurrentDir;
      extension:='';
+     fullpath:='';
      encoding:=EncodingUTF8;
      isTranslated:=False;
      isWritable:=True;
@@ -302,6 +309,23 @@ begin
      EditKeyWordsAction.Enabled:=True;
 end;
 
+procedure TMainForm.ResetState();
+begin
+  SyntaxPasMI.Checked:=False;
+  SyntaxCppMI.Checked:=False;
+  SourceCodeMI.Checked:=True;
+  TranslateTextMI.Checked:=False;
+end;
+
+function TMainForm.CurrentLang() : string;
+begin
+  if SyntaxPasMI.Checked then
+    Result:=PAS_LANG
+  else if SyntaxCppMI.Checked then
+    Result:=CPP_LANG
+  else Result:='';
+end;
+
 procedure TMainForm.MakeNewFile(mode : NewFileMode);
 begin
   if MainSynEdit.Modified then
@@ -309,6 +333,7 @@ begin
       Exit;
 
   EnableAllEditing();
+  ResetState();
 
   case mode of
     NewPascal:
@@ -355,7 +380,7 @@ end;
 
 procedure OpenFileInEditor(const AFileName: string);
 begin
-  OpenDocument(AFileName);
+  OpenDocument(SysToUTF8(AFileName));
 end;
 
 { TMainForm }
@@ -390,10 +415,7 @@ begin
                                + CurrentFile.name
                                + CurrentFile.extension);}
     {MainSynEdit.Lines.SaveToFile('foo.c');}
-    tl.SaveToFile(CurrentFile.path
-                + DirectorySeparator
-                + CurrentFile.name
-                + CurrentFile.extension);
+    tl.SaveToFile(CurrentFile.fullpath);
     MainSynEdit.Modified:=False;
     tl.Free;
   end
@@ -438,10 +460,7 @@ var
 begin
   w:=AWord;
   if not SourceCodeMI.Checked then
-    if SyntaxPasMI.Checked then
-       w:=Trim(Translate(AWord, GetLangName('.pas'), True))
-    else
-       w:=Trim(Translate(AWord, GetLangName('.cpp'), True));
+    w:=Trim(Translate(AWord, CurrentLang, True));
 
   Result:=Keywords.Values[w];
   if Result <> '' then Exit;
@@ -481,6 +500,7 @@ procedure TMainForm.OpenFile(AFileName: string);
 var
   textlines : TStringList;
   encoding  : String;
+  extension : String;
 begin
   if MainSynEdit.Modified then
     if not AnswerAskToSave() then
@@ -495,19 +515,20 @@ begin
      Exit;
   end;
 
-  if not FileIsReadable(AFileName) then begin
+  if not FileIsReadable(SysToUTF8(AFileName)) then begin
     MessageDlg('Файла не е четим',
                'Нямате права за четене на файла.', mtWarning, [mbYes], '');
     Exit;
   end;
 
-  {if not FileIsText(AFileName) then begin
+  if not FileIsText(SysToUTF8(AFileName)) then begin
     MessageDlg('Файла не може да се отвори',
                'Файла не е текстов файл.', mtWarning, [mbYes], '');
     Exit;
-  end;}
+  end;
 
   EnableAllEditing();
+  ResetState();
 
   textlines:=TStringList.Create;
   textlines.LoadFromFile(AFileName);
@@ -517,35 +538,38 @@ begin
      encoding:='CP1251';
 
   CurrentFile.SetText(ConvertEncoding(textlines.Text, encoding, EncodingUTF8));
-  CurrentFile.name:=ExtractFileNameOnly(AFileName);
+  CurrentFile.name:=UTF8ToSys(ExtractFileNameOnly(SysToUTF8(AFileName)));
   CurrentFile.path:=ExtractFileDir(AFileName);
-  CurrentFile.extension:=LowerCase(ExtractFileExt(AFileName));
+  CurrentFile.extension:=ExtractFileExt(AFileName);
+  CurrentFile.fullpath:=AFileName;
   CurrentFile.encoding:=encoding;
   CurrentFile.isTranslated:=False;
-  CurrentFile.isWritable:=FileIsWritable(AFileName);
+  CurrentFile.isWritable:=FileIsWritable(SysToUTF8(AFileName));
 
-  if (Pos(CurrentFile.extension+' ',
+  extension:=LowerCase(CurrentFile.extension);
+
+  if (Pos(extension+' ',
      '.c .cc .cpp .cs .cxx .h .hpp .hxx ') <> 0)
-     or (GetLangName(CurrentFile.extension) = 'C++') then begin
+     or (GetLangName(CurrentFile.extension) = CPP_LANG) then begin
      SourceCodeMI.Checked:=True;
      TranslateTextMI.Checked:=False;
      SyntaxCppMI.Click;
   end;
 
-  if (Pos(CurrentFile.extension+' ', '.inc .p .pas .pp .lpr .dpr ') <> 0)
-     or (GetLangName(CurrentFile.extension) = 'Pascal') then begin
+  if (Pos(extension+' ', '.inc .p .pas .pp .lpr .dpr ') <> 0)
+     or (GetLangName(CurrentFile.extension) = PAS_LANG) then begin
      SourceCodeMI.Checked:=True;
      TranslateTextMI.Checked:=False;
      SyntaxPasMI.Click;
   end;
 
-  if Pos(CurrentFile.extension+' ', '.tcpp ') <> 0 then begin
+  if Pos(extension+' ', '.tcpp ') <> 0 then begin
      SourceCodeMI.Checked:=False;
      TranslateTextMI.Checked:=True;
      SyntaxCppMI.Click;
   end;
 
-  if Pos(CurrentFile.extension+' ', '.tpas ') <> 0 then begin
+  if Pos(extension+' ', '.tpas ') <> 0 then begin
      SourceCodeMI.Checked:=False;
      TranslateTextMI.Checked:=True;
      SyntaxPasMI.Click;
@@ -563,6 +587,13 @@ begin
     if not AnswerAskToSave() then
       Exit;
 
+  OpenDialog.Filter:='Pascal/C++ файлове|*.c;*.cc;*.cpp;*.cs;*.cxx;*.dpk;*.dpr;*.h;*.hh;*.hpp;*.hxx;*.inc;*.lpr;*.p;*.pas;*.pp;*.tcpp;*.tpas';
+  if SyntaxPasMI.Checked then
+    OpenDialog.Filter:=SynPasSyn.DefaultFilter+'*.tpas|'+SynCppSyn.DefaultFilter;
+  if SyntaxCppMI.Checked then
+    OpenDialog.Filter:=SynCppSyn.DefaultFilter+'*.tcpp|'+SynPasSyn.DefaultFilter;
+  OpenDialog.Filter:=OpenDialog.Filter+'|Всички файлове|*.*';
+
   if OpenDialog.Execute then begin
     OpenFile(OpenDialog.FileName);
   end;
@@ -570,9 +601,6 @@ end;
 
 procedure TMainForm.ExitMIClick(Sender: TObject);
 begin
-  {if MainSynEdit.Modified then
-    if not AnswerAskToSave() then
-      Exit;}
   Close;
 end;
 
@@ -628,6 +656,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 var
   errorsLog : TStringList;
   i         : Integer;
+  appDir    : String;
 begin
   CurrentFile:=TCurrentFile.Create;
   HintWindow := THintWindow.Create(self);
@@ -637,24 +666,26 @@ begin
   Keywords:= TStringList.Create;
   CommandsIni:= TMemIniFile.Create('');
 
-  KeywordDescPas:=ExtractFilePath(ParamStr(0)) + 'KeyWordsPasDesc.txt';
-  KeywordDescCpp:=ExtractFilePath(ParamStr(0)) + 'KeyWordsCppDesc.txt';
+  appDir:=ExtractFilePath(ParamStr(0));
 
-  KeywordsFilePas:=ExtractFilePath(ParamStr(0)) + 'KeyWordsPas.txt';
-  KeywordsFileCpp:=ExtractFilePath(ParamStr(0)) + 'KeyWordsCpp.txt';
+  KeywordDescPas  := appDir + UTF8ToSys('KeyWordsPasDesc.txt');
+  KeywordDescCpp  := appDir + UTF8ToSys('KeyWordsCppDesc.txt');
 
-  FunctionsFilePas:=ExtractFilePath(ParamStr(0)) + 'FunctionsPas.txt';
-  FunctionsFileCpp:=ExtractFilePath(ParamStr(0)) + 'FunctionsCpp.txt';
+  KeywordsFilePas := appDir + UTF8ToSys('KeyWordsPas.txt');
+  KeywordsFileCpp := appDir + UTF8ToSys('KeyWordsCpp.txt');
 
-  CommandsFilePas:=ExtractFilePath(ParamStr(0)) + 'CommandsPas.ini';
-  CommandsFileCpp:=ExtractFilePath(ParamStr(0)) + 'CommandsCpp.ini';
+  FunctionsFilePas:= appDir + UTF8ToSys('FunctionsPas.txt');
+  FunctionsFileCpp:= appDir + UTF8ToSys('FunctionsCpp.txt');
 
-  ExamplesFilePas:=ExtractFilePath(ParamStr(0)) + 'ExamplesPas.ini';
-  ExamplesFileCpp:=ExtractFilePath(ParamStr(0)) + 'ExamplesCpp.ini';
+  CommandsFilePas := appDir + UTF8ToSys('CommandsPas.ini');
+  CommandsFileCpp := appDir + UTF8ToSys('CommandsCpp.ini');
 
-  AboutFile:=ExtractFilePath(ParamStr(0)) + 'About.html';
-  InstructionsFile:=ExtractFilePath(ParamStr(0)) + 'Help.html';
-  ErrorsFile:=ExtractFilePath(ParamStr(0)) + 'Errors.txt';
+  ExamplesFilePas := appDir + UTF8ToSys('ExamplesPas.ini');
+  ExamplesFileCpp := appDir + UTF8ToSys('ExamplesCpp.ini');
+
+  AboutFile       := appDir + UTF8ToSys('About.html');
+  InstructionsFile:= appDir + UTF8ToSys('Help.html');
+  ErrorsFile      := appDir + UTF8ToSys('Errors.txt');
 
   if GetErrors() <> '' then begin
     MessageDlg('Неправилна конфигурация',
@@ -672,6 +703,9 @@ begin
     errorsLog.SaveToFile(ErrorsFile);
     errorsLog.Free;
   end;
+
+  SyntaxPasMIClick(nil);
+  ExamplesMI.Enabled:=True;
 
   for i:=1 to Application.ParamCount do
     if FileExists(Application.Params[i])
@@ -752,10 +786,7 @@ begin
     CommandsIni.ReadSectionValues(sections[ListBox1.ItemIndex], sl);
     sl.Text:=StringReplace(sl.Text, '%', '', [rfReplaceAll]);;
     if not SourceCodeMI.Checked then begin
-      if SyntaxPasMI.Checked then
-          Memo1.Text:=Translate(sl.Text, GetLangName('.pas'), False)
-      else
-          Memo1.Text:=Translate(sl.Text, GetLangName('.cpp'), False)
+      Memo1.Text:=Translate(sl.Text, CurrentLang, False);
     end
     else  Memo1.Text:=sl.Text;
   end;
@@ -768,14 +799,13 @@ var lang: String;
   Sections: TStringList;
   i: Integer;
 begin
-  if SyntaxPasMI.Checked then
-     lang:=GetLangName('.pas')
-  else lang:=GetLangName('.cpp');
   if not SourceCodeMI.Checked then begin
+    lang:=CurrentLang;
     Sections:=TStringList.Create;
     CommandsIni.ReadSections(Sections);
-    for i:=0 to ListBox1.Items.Count-1 do
-      ListBox1.Items[i]:=Trim(Translate(Sections[i], lang, False));
+    ListBox1.Items.Clear;
+    for i:=0 to Sections.Count-1 do
+      ListBox1.Items.Append(Trim(Translate(Sections[i], lang, False)));
     Sections.Free;
   end
   else begin
@@ -785,10 +815,7 @@ end;
 
 procedure TMainForm.TranslateMemo();
 begin
-  if SyntaxPasMI.Checked then
-    Memo1.Text:=Translate(Memo1.Text, GetLangName('.pas'), SourceCodeMI.Checked)
-  else
-    Memo1.Text:=Translate(Memo1.Text, GetLangName('.cpp'), SourceCodeMI.Checked);
+  Memo1.Text:=Translate(Memo1.Text, CurrentLang, SourceCodeMI.Checked)
 end;
 
 procedure TMainForm.ListBox1DblClick(Sender: TObject);
@@ -806,10 +833,7 @@ begin
   CommandsIni.ReadSectionValues(sections[ListBox1.ItemIndex], tsl);
 
   if not SourceCodeMI.Checked then begin
-    if SyntaxPasMI.Checked then
-        CommandFrm.sl.Text:=Translate(tsl.Text, GetLangName('.pas'), False)
-    else
-        CommandFrm.sl.Text:=Translate(tsl.Text, GetLangName('.cpp'), False)
+    CommandFrm.sl.Text:=Translate(tsl.Text, CurrentLang, False)
   end
   else  CommandFrm.sl.Text:=tsl.Text;
 
@@ -927,8 +951,8 @@ begin
     end
     else begin
       saveFile:
-        if (FileExists(SaveDialog.FileName) and not FileIsWritable(SaveDialog.FileName)) or
-           (not FileExists(SaveDialog.FileName) and not DirectoryIsWritable(ExtractFileDir(SaveDialog.FileName))) then begin
+        if (FileExists(UTF8ToSys(SaveDialog.FileName)) and not FileIsWritable(SaveDialog.FileName)) or
+           (not FileExists(UTF8ToSys(SaveDialog.FileName)) and not DirectoryIsWritable(SysToUTF8(ExtractFileDir(UTF8ToSys(SaveDialog.FileName))))) then begin
           MessageDlg('Нямате права за запис',
                      'Нямате права да запишете файла.', mtWarning, [mbYes], '')
         end
@@ -951,8 +975,7 @@ end;
 procedure TMainForm.OpenInEditorActionExecute(Sender: TObject);
 begin
   if CurrentFile.name <> '' then
-    OpenFileInEditor(CurrentFile.path+DirectorySeparator
-                    +CurrentFile.name+CurrentFile.extension);
+    OpenFileInEditor(CurrentFile.fullpath);
 end;
 
 procedure TMainForm.ParallelMIClick(Sender: TObject);
@@ -985,12 +1008,8 @@ begin
   end;
 
   if ParallelSynEdit.Visible then begin
-    if SyntaxPasMI.Checked then
-      ParallelSynEdit.Lines.Text:=Translate(
-        CurrentFile.GetText(), GetLangName('.pas'), not SourceCodeMI.Checked)
-    else if SyntaxCppMI.Checked then
-      ParallelSynEdit.Lines.Text:=Translate(
-        CurrentFile.GetText(), GetLangName('.cpp'), not SourceCodeMI.Checked);
+    ParallelSynEdit.Lines.Text:=Translate(
+      CurrentFile.GetText(), CurrentLang, not SourceCodeMI.Checked)
   end;
 end;
 
@@ -1049,7 +1068,7 @@ begin
            Delete(str1, Pos('=', str), Length(str));
            ChildMI.Caption:=str1;
            Delete(str, 1, Pos('=', str));
-           ChildMI.Hint:=ExtractFilePath(ParamStr(0)) + str;
+           ChildMI.Hint:=SysToUTF8(ExtractFilePath(ParamStr(0))) + str;
            ChildMI.OnClick:= @LoadExample;
            ParentMI.Add(ChildMI);
          end;
@@ -1083,12 +1102,9 @@ var Acur: TPoint;
 begin
   Acur:=MainSynEdit.CaretXY;
   Atop:=MainSynEdit.TopLine;
-  if SyntaxPasMI.Checked then
-    CurrentFile.SetText(Translate(
-      CurrentFile.GetText(), GetLangName('.pas'), not SourceCodeMI.Checked))
-  else if SyntaxCppMI.Checked then
-    CurrentFile.SetText(Translate(
-      CurrentFile.GetText(), GetLangName('.cpp'), not SourceCodeMI.Checked));
+
+  CurrentFile.SetText(Translate(
+    CurrentFile.GetText(), CurrentLang, not SourceCodeMI.Checked));
 
   MainSynEdit.TopLine:=Atop;
   MainSynEdit.CaretXY:=Acur;
@@ -1192,5 +1208,6 @@ begin
 end;
 
 end.
+
 
 

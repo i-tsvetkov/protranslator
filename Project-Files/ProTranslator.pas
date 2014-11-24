@@ -8,6 +8,7 @@ uses
   Classes,
   IniFiles,
   LCLProc,
+  FileUtil,
   SysUtils;
 
 { Само тези три функции се предоставят за публично ползване:
@@ -115,7 +116,7 @@ end;
 procedure Panic(msg : string);
 begin
   ConfigIsBad := true;
-  ConfigErrors.Append('Грешка (' + DateTimeToStr(Now) + ') : ' + msg);
+  ConfigErrors.Append('Грешка (' + SysToUTF8(DateTimeToStr(Now)) + ') : ' + msg);
 end;
 
 { Проверява конфигурацията за нередности. }
@@ -125,9 +126,9 @@ var
   configFile, keyWordFile, jStr : string;
   sections                      : TStringList;
 begin
-  configFile := ExtractFilePath(ParamStr(0)) + CONFIG_FILE;
+  configFile := ExtractFilePath(ParamStr(0)) + UTF8ToSys(CONFIG_FILE);
   if not FileExists(configFile) then
-    Panic('Конфигурационния файл ' + configFile + ' не е намерен.');
+    Panic('Конфигурационния файл "' + SysToUTF8(configFile) + '" не е намерен.');
   sections := TStringList.Create;
   IniFile.ReadSections(sections);
   for i := 0 to sections.Count-1 do begin
@@ -139,9 +140,9 @@ begin
             ' задължителния ключ KeyWordFile липсва.')
     else begin
       keyWordFile := ExtractFilePath(ParamStr(0)) +
-                     IniFile.ReadString(sections[i], 'KeyWordFile', '');
+                     UTF8ToSys(IniFile.ReadString(sections[i], 'KeyWordFile', ''));
       if not FileExists(keyWordFile) then
-        Panic('Файла ' + keyWordFile + ' указан от ключ KeyWordFile в раздел '
+        Panic('Файла "' + SysToUTF8(keyWordFile) + '" указан от ключ KeyWordFile в раздел '
               + sections[i] + ' не е намерен.');
     end;
     if not IniFile.ValueExists(sections[i], 'RegionsCount') then
@@ -176,7 +177,7 @@ var
 begin
   ConfigIsBad  := false;
   ConfigErrors := TStringList.Create;
-  configFile := ExtractFilePath(ParamStr(0)) + CONFIG_FILE;
+  configFile := ExtractFilePath(ParamStr(0)) + UTF8ToSys(CONFIG_FILE);
   CurrentRegion := nil;
   RegionsCount  := 0;
   LastLang := '';
@@ -208,7 +209,7 @@ begin
   sections := TStringList.Create;
   IniFile.ReadSections(sections);
   for i := 0 to sections.Count-1 do begin
-    fileExt    := IniFile.ReadString(sections[i], 'FileExtensions', '') + ' ';
+    fileExt    := UTF8ToSys(IniFile.ReadString(sections[i], 'FileExtensions', '')) + ' ';
     fileExtens := ExtractFileExt(filename) + ' ';
     if Pos(fileExtens, fileExt) <> 0 then begin
       GetLangName := sections[i];
@@ -244,7 +245,7 @@ begin
   end;
   KeyWords.CaseSensitive := IniFile.ReadBool(lang, 'CaseSensitive', true);
   keyWordFile := ExtractFilePath(ParamStr(0)) +
-                 IniFile.ReadString(lang, 'KeyWordFile', '');
+                 UTF8ToSys(IniFile.ReadString(lang, 'KeyWordFile', ''));
   KeyWords.LoadFromFile(keyWordFile);
   LastLang := lang;
   LoadSettings := true;
