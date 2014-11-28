@@ -46,7 +46,7 @@
         <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="project1"/>
-        <UsageCount Value="34"/>
+        <UsageCount Value="36"/>
       </Unit0>
       <Unit1>
         <Filename Value="unit1.pas"/>
@@ -58,9 +58,9 @@
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1091"/>
-        <CursorPos X="24" Y="1099"/>
-        <UsageCount Value="34"/>
+        <TopLine Value="576"/>
+        <CursorPos X="23" Y="583"/>
+        <UsageCount Value="36"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -73,9 +73,9 @@
         <UnitName Value="Unit2"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="36" Y="106"/>
-        <UsageCount Value="34"/>
+        <TopLine Value="67"/>
+        <CursorPos X="16" Y="85"/>
+        <UsageCount Value="36"/>
         <Loaded Value="True"/>
       </Unit2>
     </Units>

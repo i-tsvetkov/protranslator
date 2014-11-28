@@ -162,7 +162,7 @@ object MainForm: TMainForm
     Font.Height = -21
     Font.Name = 'Courier New'
     Font.Pitch = fpFixed
-    Font.Quality = fqNonAntialiased
+    Font.Quality = fqAntialiased
     ParentColor = False
     ParentFont = False
     PopupMenu = PopupMenuRC
@@ -720,7 +720,7 @@ object MainForm: TMainForm
     Font.Height = -21
     Font.Name = 'Courier New'
     Font.Pitch = fpFixed
-    Font.Quality = fqNonAntialiased
+    Font.Quality = fqAntialiased
     ParentColor = False
     ParentFont = False
     TabOrder = 3

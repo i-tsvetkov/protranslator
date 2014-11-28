@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, Forms, Controls, Dialogs, Menus,
   ComCtrls, ExtCtrls, StdCtrls, ActnList, StdActns, SynHighlighterCpp,
   SynHighlighterPas, SynEdit, INIFiles, Unit2, Types,
-  LConvEncoding, ProTranslator, LCLIntf;
+  LConvEncoding, ProTranslator, LCLIntf, LCLProc;
 
 type
 
@@ -583,15 +583,13 @@ end;
 
 procedure TMainForm.OpenMIClick(Sender: TObject);
 begin
-  if MainSynEdit.Modified then
-    if not AnswerAskToSave() then
-      Exit;
-
-  OpenDialog.Filter:='Pascal/C++ файлове|*.c;*.cc;*.cpp;*.cs;*.cxx;*.dpk;*.dpr;*.h;*.hh;*.hpp;*.hxx;*.inc;*.lpr;*.p;*.pas;*.pp;*.tcpp;*.tpas';
+  OpenDialog.Filter:='Pascal/C++ файлове|*.c;*.cc;*.cpp;*.cs;*.cxx;*.dpk;*.dpr;'
+                                       +'*.h;*.hh;*.hpp;*.hxx;*.inc;*.lpr;*.p;'
+                                       +'*.pas;*.pp;*.tcpp;*.tpas';
   if SyntaxPasMI.Checked then
-    OpenDialog.Filter:=SynPasSyn.DefaultFilter+'*.tpas|'+SynCppSyn.DefaultFilter;
+    OpenDialog.Filter:=SynPasSyn.DefaultFilter+'|'+SynCppSyn.DefaultFilter;
   if SyntaxCppMI.Checked then
-    OpenDialog.Filter:=SynCppSyn.DefaultFilter+'*.tcpp|'+SynPasSyn.DefaultFilter;
+    OpenDialog.Filter:=SynCppSyn.DefaultFilter+'|'+SynPasSyn.DefaultFilter;
   OpenDialog.Filter:=OpenDialog.Filter+'|Всички файлове|*.*';
 
   if OpenDialog.Execute then begin
@@ -665,6 +663,8 @@ begin
   Functions:= TStringList.Create;
   Keywords:= TStringList.Create;
   CommandsIni:= TMemIniFile.Create('');
+  SynPasSyn.DefaultFilter:=SynPasSyn.DefaultFilter+';*.p;*.pp;*.lpr;*.tpas';
+  SynCppSyn.DefaultFilter:=SynCppSyn.DefaultFilter+';*.cc;*.cs;*.cxx;*.hxx;*.tcpp';
 
   appDir:=ExtractFilePath(ParamStr(0));
 
@@ -695,7 +695,7 @@ begin
     errorsLog:=TStringList.Create;
     if FileExists(ErrorsFile) then begin
       errorsLog.LoadFromFile(ErrorsFile);
-      errorsLog.Append(GetErrors());
+      errorsLog.Append(Trim(GetErrors()));
     end
     else begin
       errorsLog.Text:=GetErrors();
@@ -784,7 +784,8 @@ begin
   if ListBox1.ItemIndex>=0 then begin
     CommandsIni.ReadSections(sections);
     CommandsIni.ReadSectionValues(sections[ListBox1.ItemIndex], sl);
-    sl.Text:=StringReplace(sl.Text, '%', '', [rfReplaceAll]);;
+    sl.Text:=removeComments(sl.Text);
+    sl.Text:=stripTags(sl.Text);
     if not SourceCodeMI.Checked then begin
       Memo1.Text:=Translate(sl.Text, CurrentLang, False);
     end
@@ -831,27 +832,28 @@ begin
   Spaces:='';
   CommandsIni.ReadSections(sections);
   CommandsIni.ReadSectionValues(sections[ListBox1.ItemIndex], tsl);
+  tsl.Text:=removeComments(tsl.Text);
 
   if not SourceCodeMI.Checked then begin
     CommandFrm.sl.Text:=Translate(tsl.Text, CurrentLang, False)
   end
   else  CommandFrm.sl.Text:=tsl.Text;
 
-  for i:=0 to MainSynEdit.CaretX-2 do
+  for i:=0 to MainSynEdit.CaretX-2-UTF8Length(MainSynEdit.SelText) do
       Spaces:=Spaces+' ';
   if not InsertConstructionsDialogMI.Checked then
   begin
     for i:=1 to CommandFrm.sl.Count-1 do
       CommandFrm.sl.Strings[i]:=Spaces+CommandFrm.sl.Strings[i];
-    CommandFrm.sl.Text:=StringReplace(CommandFrm.sl.Text, '%', '', [rfReplaceAll]);
-    MainSynEdit.SelText:=CommandFrm.sl.Text;
+    CommandFrm.sl.Text:=stripTags(CommandFrm.sl.Text);
+    MainSynEdit.SelText:=Trim(CommandFrm.sl.Text);
   end
   else
   begin
      if CommandFrm.ShowModal = mrOK then begin
        for i:=1 to CommandFrm.PreviewSynEdit.Lines.Count-1 do
          CommandFrm.PreviewSynEdit.Lines.Strings[i]:=Spaces+CommandFrm.PreviewSynEdit.Lines.Strings[i];
-       MainSynEdit.SelText:=CommandFrm.PreviewSynEdit.Text;
+       MainSynEdit.SelText:=Trim(CommandFrm.PreviewSynEdit.Text);
      end;
   end;
   FocusControl(MainSynEdit);
@@ -941,7 +943,7 @@ begin
   SaveDialog.Filter:=SaveDialog.Filter+'|Всички файлове|*.*';
 
   if SaveDialog.Execute then begin
-    if FileExists(SaveDialog.FileName) then begin
+    if FileExists(UTF8ToSys(SaveDialog.FileName)) then begin
       if QuestionDlg('Запис на файл',
                      'Файлът съществува.' + LineEnding +
                      'Желаете ли да презапишете съдържанието му?',
@@ -959,12 +961,12 @@ begin
         else begin
           tl:=TStringList.Create;
           tl.Text:=MainSynEdit.Lines.Text;
-          tl.SaveToFile(SaveDialog.FileName);
+          tl.SaveToFile(UTF8ToSys(SaveDialog.FileName));
           { FIXME }
           {MainSynEdit.Lines.SaveToFile(SaveDialog.FileName);}
           tl.Free;
           MainSynEdit.Modified:=False;
-          OpenFile(SaveDialog.FileName);
+          OpenFile(UTF8ToSys(SaveDialog.FileName));
         end;
     end;
   end;
@@ -1208,6 +1210,7 @@ begin
 end;
 
 end.
+
 
 
 

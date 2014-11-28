@@ -56,7 +56,7 @@ object CommandFrm: TCommandFrm
     Font.Height = -13
     Font.Name = 'Courier New'
     Font.Pitch = fpFixed
-    Font.Quality = fqNonAntialiased
+    Font.Quality = fqAntialiased
     ParentColor = False
     ParentFont = False
     TabOrder = 1

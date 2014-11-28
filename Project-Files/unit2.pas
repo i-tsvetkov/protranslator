@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Grids,
-  StdCtrls, Buttons, ExtCtrls, SynEdit;
+  StdCtrls, Buttons, ExtCtrls, SynEdit, LCLProc;
 
 type
 
@@ -35,6 +35,9 @@ type
 var
   CommandFrm: TCommandFrm;
 
+function stripTags(s : string) : string;
+function removeComments(s : string) : string;
+
 implementation
 
 uses
@@ -44,6 +47,28 @@ uses
 {$R *.lfm}
 
 { TCommandFrm }
+
+function stripTags(s : string) : string;
+begin
+  s:=StringReplace(s,         '`'  ,   '\`', [rfReplaceAll]);
+  s:=StringReplace(s,         '\\`', '\\``', [rfReplaceAll]);
+  s:=StringReplace(s,         '\`' ,     '', [rfReplaceAll]);
+  stripTags:=StringReplace(s, '\`' ,    '`', [rfReplaceAll]);
+end;
+
+function removeComments(s : string) : string;
+var
+  sl  : TStringList;
+  i   : Integer;
+begin
+  sl:=TStringList.Create;
+  sl.Text:=s;
+  for i:=0 to sl.Count-1 do
+    if sl[i][1] = '#' then
+      sl[i]:=UTF8Copy(sl[i], 2, UTF8Length(sl[i]));
+  removeComments:=sl.Text;
+  sl.Free;
+end;
 
 procedure TCommandFrm.FormCreate(Sender: TObject);
 begin
@@ -64,11 +89,12 @@ var
     i: integer;
     param: string;
   begin
+    s:=StringReplace(s, '\`', '', [rfReplaceAll]);
     while Length(s) > 0 do begin
-      i:= Pos('%', s);
+      i:= Pos('`', s);
       if i = 0 then Break;
       Delete(s, 1, i);
-      i:= Pos('%', s);
+      i:= Pos('`', s);
       if i = 0 then Break;
       param:=Copy(s, 1, i-1);
       if Params.IndexOf(param)<0 then
@@ -85,7 +111,7 @@ begin
   PreviewSynEdit.Font.Size:=MainForm.MainSynEdit.Font.Size;
 
   PreviewSynEdit.Highlighter:=MainForm.MainSynEdit.Highlighter;
-  PreviewSynEdit.Text:= StringReplace(CommandFrm.sl.Text, '%', '', [rfReplaceAll]);
+  PreviewSynEdit.Text:=stripTags(CommandFrm.sl.Text);
   Params:=TStringList.Create;
   ParseCommand(sl.Text);
   StringGrid.RowCount:=Params.Count+1;
@@ -105,7 +131,8 @@ var
 begin
   s:=sl.Text;
   for i:=0 to StringGrid.RowCount-1 do
-  s:=StringReplace(s, '%'+StringGrid.Cells[0,i]+'%', StringGrid.Cells[1,i], [rfReplaceAll]);
+  s:=StringReplace(s, '`'+StringGrid.Cells[0,i]+'`', StringGrid.Cells[1,i], [rfReplaceAll]);
+  s:=StringReplace(s, '\`', '`', [rfReplaceAll]);
   PreviewSynEdit.Text:=s;
 end;
 
