@@ -844,6 +844,7 @@ var
   i: Integer;
   tsl: TStringList;
   sections: TStringList;
+  needArguments: Boolean;
 begin
   if (ListBox1.Items.Count = 0) or (ListBox1.ItemIndex < 0) then Exit;
   tsl := TStringList.Create;
@@ -852,6 +853,7 @@ begin
   CommandsIni.ReadSections(sections);
   CommandsIni.ReadSectionValues(sections[ListBox1.ItemIndex], tsl);
   tsl.Text:=removeComments(tsl.Text);
+  needArguments := Pos('`', StringReplace(tsl.Text, '\`', '', [rfReplaceAll])) <> 0;
 
   if not SourceCodeMI.Checked then begin
     CommandFrm.sl.Text:=Translate(tsl.Text, CurrentLang, False)
@@ -860,7 +862,7 @@ begin
 
   for i:=0 to MainSynEdit.CaretX-2-UTF8Length(MainSynEdit.SelText) do
       Spaces:=Spaces+' ';
-  if not InsertConstructionsDialogMI.Checked then
+  if not InsertConstructionsDialogMI.Checked or not needArguments then
   begin
     for i:=1 to CommandFrm.sl.Count-1 do
       CommandFrm.sl.Strings[i]:=Spaces+CommandFrm.sl.Strings[i];
