@@ -1091,7 +1091,9 @@ begin
            Delete(str1, Pos('=', str), Length(str));
            ChildMI.Caption:=str1;
            Delete(str, 1, Pos('=', str));
-           ChildMI.Hint:=SysToUTF8(ExtractFilePath(ParamStr(0))) + str;
+           ChildMI.Hint:=SysToUTF8(ExtractFilePath(ParamStr(0)))
+                       + StringReplace(str, ' => ', DirectorySeparator,
+                                      [rfReplaceAll]);
            ChildMI.OnClick:= @LoadExample;
            ParentMI.Add(ChildMI);
          end;
