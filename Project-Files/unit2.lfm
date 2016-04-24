@@ -637,4 +637,4 @@ object CommandFrm: TCommandFrm
     Align = alBottom
     ResizeAnchor = akBottom
   end
-end
+end
