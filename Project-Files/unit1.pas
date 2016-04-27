@@ -171,6 +171,7 @@ type
     procedure ListBox1DblClick(Sender: TObject);
     procedure DecreaseFontMIClick(Sender: TObject);
     procedure LightColorsMIClick(Sender: TObject);
+    procedure ParallelSynEditClick(Sender: TObject);
     procedure ResetFontMIClick(Sender: TObject);
     procedure OpenWebPageMIClick(Sender: TObject);
     procedure NewFileCppMIClick(Sender: TObject);
@@ -230,7 +231,7 @@ type
     ExamplesFilePas, ExamplesFileCpp,
     KeywordsFilePas, KeywordsFileCpp,
     ErrorsFile, AboutFile, InstructionsFile : String;
-    function GetWordDesc(const AWord: string): string;
+    function GetWordDesc(const AWord: string; MainEdit: Boolean = True): string;
     procedure LoadExample(Sender: TObject);
     procedure LoadSyntax(const KeywordDesc, CommandsFile, FunctionsFile, ExamplesFile: string);
     procedure OpenFile(AFileName: string);
@@ -452,7 +453,7 @@ procedure TMainForm.ShowKeyWordActionExecute(Sender: TObject);
 var word: String;
 begin
   if ParallelSynEdit.Focused then
-    word:=ParallelSynEdit.GetWordAtRowCol(MainSynEdit.CaretXY)
+    word:=ParallelSynEdit.GetWordAtRowCol(ParallelSynEdit.CaretXY)
   else word:=MainSynEdit.GetWordAtRowCol(MainSynEdit.CaretXY);
     // маркира думата, върху която е курсора
     if ShowKeyWordAction.Checked then begin
@@ -472,13 +473,13 @@ begin
    StatusBar.SimpleText:=GetWordDesc(word);
 end;
 
-function TMainForm.GetWordDesc(const AWord: string): string;
+function TMainForm.GetWordDesc(const AWord: string; MainEdit: Boolean = True): string;
 var
   Section: TStringList;
   w: String;
 begin
   w:=AWord;
-  if not SourceCodeMI.Checked then
+  if (not SourceCodeMI.Checked and MainEdit) or (not MainEdit and SourceCodeMI.Checked) then
     w:=Trim(Translate(AWord, CurrentLang, True));
 
   Result:=Keywords.Values[w];
@@ -782,12 +783,22 @@ var
   word, desc: String;
   P: TPoint;
 begin
-   word:=MainSynEdit.GetWordAtRowCol(MainSynEdit.CaretXY);
-   desc:= GetWordDesc(word);
+   if MainSynEdit.Focused then
+     word:=MainSynEdit.GetWordAtRowCol(MainSynEdit.CaretXY)
+   else
+     word:=ParallelSynEdit.GetWordAtRowCol(ParallelSynEdit.CaretXY);
+   desc:= GetWordDesc(word, MainSynEdit.Focused);
+   StatusBar.SimpleText:=desc;
    if desc =  '' then Exit;
    Rect := HintWindow.CalcHintRect(0, desc,nil);
-   P:= MainSynEdit.RowColumnToPixels(MainSynEdit.CaretXY);
-   P:= MainSynEdit.ClientToScreen(P);
+   if MainSynEdit.Focused then begin
+    P:= MainSynEdit.RowColumnToPixels(MainSynEdit.CaretXY);
+    P:= MainSynEdit.ClientToScreen(P);
+   end
+   else begin
+    P:= ParallelSynEdit.RowColumnToPixels(ParallelSynEdit.CaretXY);
+    P:= ParallelSynEdit.ClientToScreen(P);
+   end;
    OffsetRect(Rect, P.X, P.Y);
    Delete(desc, 1, Pos(',', desc));
    HintWindow.ActivateHint(Rect, desc);
@@ -904,6 +915,11 @@ begin
     SynPasSyn.SymbolAttri.Foreground:=$c4716c
   else
     SynCppSyn.SymbolAttri.Foreground:=$c4716c;
+end;
+
+procedure TMainForm.ParallelSynEditClick(Sender: TObject);
+begin
+  StatusBar.SimpleText:=GetWordDesc(ParallelSynEdit.GetWordAtRowCol(ParallelSynEdit.CaretXY), False);
 end;
 
 procedure TMainForm.ResetFontMIClick(Sender: TObject);
