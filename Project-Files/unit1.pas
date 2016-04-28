@@ -1171,7 +1171,7 @@ end;
 
 procedure TMainForm.EditCopyActionUpdate(Sender: TObject);
 begin
- TAction(Sender).Enabled :=MainSynEdit.Focused and MainSynEdit.SelAvail;
+  TAction(Sender).Enabled := MainSynEdit.Focused and MainSynEdit.SelAvail;
 end;
 
 procedure TMainForm.EditCutActionExecute(Sender: TObject);
@@ -1181,7 +1181,9 @@ end;
 
 procedure TMainForm.EditCutActionUpdate(Sender: TObject);
 begin
- TAction(Sender).Enabled :=MainSynEdit.Focused and MainSynEdit.SelAvail and not MainSynEdit.ReadOnly;
+  TAction(Sender).Enabled := MainSynEdit.Focused
+                         and MainSynEdit.SelAvail
+                         and not MainSynEdit.ReadOnly;
 end;
 
 procedure TMainForm.EditDeleteActionExecute(Sender: TObject);
@@ -1191,47 +1193,51 @@ end;
 
 procedure TMainForm.EditDeleteActionUpdate(Sender: TObject);
 begin
- TAction(Sender).Enabled :=MainSynEdit.Focused and MainSynEdit.SelAvail and not MainSynEdit.ReadOnly;
+  TAction(Sender).Enabled := MainSynEdit.Focused
+                         and MainSynEdit.SelAvail
+                         and not MainSynEdit.ReadOnly;
 end;
 
 procedure TMainForm.EditPasteActionExecute(Sender: TObject);
 begin
- MainSynEdit.PasteFromClipboard;
+  MainSynEdit.PasteFromClipboard;
 end;
 
 procedure TMainForm.EditPasteActionUpdate(Sender: TObject);
 begin
-TAction(Sender).Enabled :=MainSynEdit.Focused and MainSynEdit.CanPaste;
+  TAction(Sender).Enabled := MainSynEdit.Focused
+                         and MainSynEdit.CanPaste
+                         and not MainSynEdit.ReadOnly;
 end;
 
 procedure TMainForm.EditRedoActionExecute(Sender: TObject);
 begin
- MainSynEdit.Redo;
+  MainSynEdit.Redo;
 end;
 
 procedure TMainForm.EditRedoActionUpdate(Sender: TObject);
 begin
-TAction(Sender).Enabled :=MainSynEdit.CanRedo;
+  TAction(Sender).Enabled:=MainSynEdit.CanRedo and not MainSynEdit.ReadOnly;
 end;
 
 procedure TMainForm.EditSelectAllActionExecute(Sender: TObject);
 begin
- MainSynEdit.SelectAll;
+  MainSynEdit.SelectAll;
 end;
 
 procedure TMainForm.EditSelectAllActionUpdate(Sender: TObject);
 begin
-TAction(Sender).Enabled :=MainSynEdit.Focused and (MainSynEdit.Lines.Text<>'');
+  TAction(Sender).Enabled:=MainSynEdit.Focused and (MainSynEdit.Lines.Text<>'');
 end;
 
 procedure TMainForm.EditUndoActionExecute(Sender: TObject);
 begin
- MainSynEdit.Undo;
+  MainSynEdit.Undo;
 end;
 
 procedure TMainForm.EditUndoActionUpdate(Sender: TObject);
 begin
-TAction(Sender).Enabled :=MainSynEdit.CanUndo;
+  TAction(Sender).Enabled:=MainSynEdit.CanUndo and not MainSynEdit.ReadOnly;
 end;
 
 procedure TMainForm.TranslateTextMIClick(Sender: TObject);
