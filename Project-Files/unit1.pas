@@ -417,24 +417,10 @@ begin
   if (CurrentFile.name <> '') and not CurrentFile.isTranslated and CurrentFile.isWritable then begin
     tl:=TStringList.Create;
     tl.Text:=MainSynEdit.Lines.Text;
-    {FIXME
-     (project1:7500): GLib-CRITICAL **: Source ID 420
-      was not found when attempting to remove it
-      TApplication.HandleException Access violation
-      Stack trace:
-      $000000000078FBF0
-      $00000000007F5178
-      $000000000045EAA4
-      ...
-      $000000000069E731
-      WARNING: TLCLComponent.Destroy with LCLRefCount>0.
-      Hint: Maybe the component is processing an event?
+    {
+      FIXME: Access Violation error
+      MainSynEdit.Lines.SaveToFile(CurrentFile.fullpath);
     }
-    {MainSynEdit.Lines.SaveToFile(CurrentFile.path
-                               + DirectorySeparator
-                               + CurrentFile.name
-                               + CurrentFile.extension);}
-    {MainSynEdit.Lines.SaveToFile('foo.c');}
     tl.SaveToFile(CurrentFile.fullpath);
     MainSynEdit.Modified:=False;
     tl.Free;
@@ -999,8 +985,10 @@ begin
           tl:=TStringList.Create;
           tl.Text:=MainSynEdit.Lines.Text;
           tl.SaveToFile(UTF8ToSys(SaveDialog.FileName));
-          { FIXME }
-          {MainSynEdit.Lines.SaveToFile(SaveDialog.FileName);}
+          {
+            FIXME: Access Violation error
+            MainSynEdit.Lines.SaveToFile(UTF8ToSys(SaveDialog.FileName));
+          }
           tl.Free;
           MainSynEdit.Modified:=False;
           OpenFile(UTF8ToSys(SaveDialog.FileName));
