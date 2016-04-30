@@ -1,0 +1,6 @@
+Project-Files/backup/*
+Project-Files/lib/*
+*.exe
+*.res
+Project-Files/ProTranslator
+

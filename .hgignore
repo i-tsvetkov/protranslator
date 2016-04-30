@@ -1,4 +1,0 @@
-syntax: glob
-Project-Files/backup/*
-Project-Files/lib/*
-Project-Files/project1.exe
