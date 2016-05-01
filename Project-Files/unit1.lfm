@@ -1,12 +1,12 @@
 object MainForm: TMainForm
-  Left = 107
+  Left = 149
   Height = 620
-  Top = 56
-  Width = 1162
+  Top = 53
+  Width = 1055
   AllowDropFiles = True
   Caption = 'ProTranslator'
   ClientHeight = 592
-  ClientWidth = 1162
+  ClientWidth = 1055
   Menu = MainMenu
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -17,7 +17,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 26
     Top = 566
-    Width = 1162
+    Width = 1055
     AutoHint = True
     Panels = <    
       item
@@ -31,7 +31,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 52
     Top = 0
-    Width = 1162
+    Width = 1055
     AutoSize = True
     ButtonHeight = 50
     Caption = 'ToolBar'
@@ -126,7 +126,7 @@ object MainForm: TMainForm
     object InsertConstructsTB: TToolButton
       Left = 939
       Top = 2
-      Caption = 'Вмъкване на конструкции'
+      Caption = 'Конструкции'
       Enabled = False
       ImageIndex = 13
       MenuItem = InsertConstructionsMI
@@ -156,7 +156,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 514
     Top = 52
-    Width = 534
+    Width = 427
     Align = alClient
     Color = 14939901
     Font.Height = -21
@@ -711,7 +711,7 @@ object MainForm: TMainForm
   inline ParallelSynEdit: TSynEdit
     AnchorSideLeft.Control = Splitter1
     Cursor = crDefault
-    Left = 539
+    Left = 432
     Height = 514
     Top = 52
     Width = 426
@@ -1257,7 +1257,7 @@ object MainForm: TMainForm
   end
   object InsertConstructionPanel: TPanel
     Cursor = crArrow
-    Left = 970
+    Left = 863
     Height = 514
     Top = 52
     Width = 192
@@ -1273,8 +1273,12 @@ object MainForm: TMainForm
       Top = 1
       Width = 190
       Align = alTop
+      Font.Name = 'Monospace'
+      ParentFont = False
       ReadOnly = True
+      ScrollBars = ssAutoBoth
       TabOrder = 0
+      WordWrap = False
     end
     object ListBox1: TListBox
       Left = 1
@@ -1301,7 +1305,7 @@ object MainForm: TMainForm
     end
   end
   object Splitter1: TSplitter
-    Left = 534
+    Left = 427
     Height = 514
     Top = 52
     Width = 5
@@ -1311,7 +1315,7 @@ object MainForm: TMainForm
     Visible = False
   end
   object Splitter2: TSplitter
-    Left = 965
+    Left = 858
     Height = 514
     Top = 52
     Width = 5
@@ -3100,7 +3104,7 @@ object MainForm: TMainForm
       Caption = 'Настройки'
       object InsertConstructionsMI: TMenuItem
         AutoCheck = True
-        Caption = 'Вмъкване на конструкции'
+        Caption = 'Конструкции'
         Enabled = False
         Bitmap.Data = {
           C6070000424DC607000000000000360000002800000016000000160000000100
